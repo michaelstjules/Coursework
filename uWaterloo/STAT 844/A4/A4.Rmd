@@ -1,0 +1,669 @@
+---
+title: "CM 764 - A4"
+author: "Michael St. Jules"
+date: "March 6, 2017"
+output: pdf_document
+header-includes:
+- \usepackage{graphicx}
+- \usepackage{color}
+- \usepackage{hyperref}
+- \usepackage{epic}
+- \PassOptionsToPackage{pdfmark}{hyperref}\RequirePackage{hyperref}
+- \newcommand{\tr}[1]{{#1}^{\mkern-1.5mu\mathsf{T}}}
+- \renewcommand{\bf}[1]{\mathbf{#1}}
+---
+
+
+
+
+\noindent 1. I assume that $g$ is $C^2([a,b])$ (or at least twice differentiable).
+
+a.
+
+\begin{align*}
+\int_a^b \mu''(x) h''(x)dx &= \int_a^{x_1} \mu''(x) h''(x)dx + \int_{x_1}^{x_N} \mu''(x) h''(x)dx + \int_{x_N}^b \mu''(x) h''(x)dx \\
+& \text{\ \ \ \ \ \ \ \ \ since integrals can be broken up} \\
+&= \int_{x_1}^{x_N} \mu''(x) h''(x)dx \text{, since } \mu''(x) = 0 \\
+& \text{\ \ \ \ \ \ \ \ \ on $(a,x_1)$ and $(x_N,b)$, beause it is linear on these intervals} \\
+&= \sum_{i=1}^{N-1} \int_{x_i}^{x_N} \mu''(x) h''(x)dx \\
+& \text{\ \ \ \ \ \ \ \ \ again, since integrals can be broken up} \\
+&= \sum_{i=1}^{N-1} \mu''(x)h'(x) \bigg|_{x_i}^{x_{i+1}} - \int_{x_i}^{x_{i+1}} \mu'''(x) h'(x)dx \\
+&\text{\ \ \ \ \ \ \ \ \ by integration by parts, with } u=\mu''(x), dv = h''(x)dx \text{, so } du = \mu'''(x)dx, v = h'(x) \\
+& \text{\ \ \ \ \ \ \ \ \ (I broke these up, because we usually assume $u$ is $C^1$, so $\mu'''$ is continuous)} \\
+&= \mu''(x)h'(x) \bigg|_{x_1}^{x_N} - \int_{x_1}^{x_N} \mu'''(x) h'(x)dx \\
+& \text{\ \ \ \ \ \ \ \ \ by recombining integrals, and because $\sum_{i=1}^{N-1} \mu''(x)h'(x) \bigg|_{x_i}^{x_{i+1}}$ is a telescoping sum} \\
+&= - \int_{x_1}^{x_N} \mu'''(x) h'(x)dx \\
+&\text{\ \ \ \ \ \ \ \ \ since $\mu''(x_1) = \mu''(x_N) = 0$, by continuity of $\mu''$ and since $\mu''(x) = 0$ on $(a,x_1)$ and $(x_N,b)$}
+\end{align*}
+
+\noindent b. It holds because 
+\[\int_{x_1}^{x_N} f(x) dx = \sum_{i=1}^{N-1} \int_{x_i}^{x_{i+1}} f(x) dx\]
+holds for any continuous function $f$ on any interval containing all of the $x_i$. This in turn follows by induction on \[\int_{a}^{c} f(x) dx = \int_{a}^{b} f(x) dx + \int_{b}^{c} f(x) dx. \]
+
+\noindent c. On each interval $(x_i,x_{i+1})$
+\[ \mu(x) = a_{i3} x^3 + a_{i2} x^2 + a_{i1} x + a_{i0}, \]
+so 
+\[ \mu'(x) = 3a_{i3} x^2 + 2a_{i2} x + a_{i1}, \]
+so
+\[ \mu''(x) = 6a_{i3} x + 2a_{i2}, \]
+so
+\[ \mu'''(x) = 6a_{i3}.\]
+
+Since $\mu$ is linear on $[a,x_1)$ and $(x_N,b], \mu'''(x) = 0$ on those intervals. 
+
+$\mu'''(x)$ is not in general defined at the knots; it is only when $\mu'''(x)$ is the same on each side of a knot (i.e. $a_{i3} = a_{i+1 3}$ or $a_{13} = 0$ or $a{N-1 3} = 0$).
+
+\noindent d. 
+
+\[ \int_{x_i}^{x_{i+1}} \mu'''(x) h'(x)dx = \int_{x_i}^{x_{i+1}} c_i h'(x)dx = c_i \int_{x_i}^{x_{i+1}} h'(x)dx = c_i (h(x_{i+1}) - h(x_i)),\]
+where the first equality holds with $c_i = 6a_{i3}$ from 1.c. (the endpoints of the interval don't matter), the second by linearity of integration and last by the fundamental theorem of calculus. Note further that since $g(x_i) = \mu(x_i) = y_i$ for each $i$, $h(x_i) := g(x_i) - \mu(x_i) = 0$ for each $i$, this quantity is just 0. 
+
+\noindent e. 
+
+\begin{align*}
+\int_a^b \mu''(x) h''(x)dx &= - \int_{x_1}^{x_N} \mu'''(x) h'(x)dx & \text{\ \ \ \ \ \ \ \ \ by a.} \\
+&= - \sum_{i=1}^{N-1} \int_{x_i}^{x_{i+1}} \mu'''(x) h'(x)dx & \text{\ \ \ \ \ \ \ \ \ by b.} \\
+&= - \sum_{i=1}^{N-1} c_i (h(x_{i+1}) - h(x_i)) & \text{\ \ \ \ \ \ \ \ \ by c., for some $c_i$} \\
+&= 0 & \text{\ \ \ \ \ \ \ \ \ since $h(x_i) := g(x_i) - \mu(x_i) = y_i - y_i = 0$ for each $i$.} \\
+\end{align*}
+
+\noindent f. 
+
+\begin{align*}
+\int_a^b (g''(x))^2 dx &= \int_a^b (\mu''(x) + h''(x))^2 dx \\
+&= \int_a^b (\mu''(x))^2 + 2\mu''(x)h''(x) + (h''(x))^2 dx \\
+&= \int_a^b (\mu''(x))^2 dx + 2 \int_a^b \mu''(x)h''(x) dx + \int_a^b (h''(x))^2 dx \\
+&= \int_a^b (\mu''(x))^2 dx + 2 0 + \int_a^b (h''(x))^2 dx \text{ by e.} \\
+&= \int_a^b (\mu''(x))^2 dx + \int_a^b (h''(x))^2 dx \\
+&\geq \int_a^b (\mu''(x))^2 dx \text{ since } \int_a^b (h''(x))^2 dx \geq 0 \\
+\end{align*}
+
+And equality holds if and only if \[\int_a^b (h''(x))^2 dx =0.\] This happens if and only if $h''(x)) = 0$ on $[a,b]$, i.e. $g''(x) = \mu''(x)$ on $[a,b]$. 
+
+Clearly if $g = \mu$ on $[a,b]$, then this holds. 
+
+Conversely, if $g''(x) = \mu''(x)$ on $[a,b]$, then on each interval $[a,x_1], [x_1, x_2], \dots, [x_{N-1}, x_N], [x_N,b]$, $g$ must also be a cubic polynomial ($g''$ is linear, so $g'$ is quadratic and $g$ is cubic). Then, $g$ and $\mu$, being cubic polynomials (linear is still cubic, just with two 0 coefficients) on each interval, and hence 4 degrees of freedom, have 4 independent constraints on their coefficients:
+
+$g''(x) = \mu''(x) = ax+b$ implies the first 2 leading coefficients must match, respectively (all $0$ for $[a,x_1)$ and $(x_N, b]$ since $\mu$ is linear there). These are 2 constraints. 
+
+For interior intervals $[x_i, x_{i+1}], g(x_i) = \mu(x_i) = y_i$ and $g(x_{i+1}) = \mu(x_{i+1}) = y_{i+1}$, 2 more constraints on the remaining two cofficients. In particular, $h = g - \mu$ is linear, because the two leading coefficents are 0$, and since it must pass through $(x_i, 0), (x_{i+1}, 0)$, $h$ must be identically 0 on the interval. Hence $g = \mu$ on these intervals. 
+
+For the boundary interval $[a, x_1]$, $\mu''(x) = 0$ and $h''(x) = 0$ implies $g''(x) = 0$, so that $g$ is also linear. So, since $g$ and $\mu$ are differentiable (at $x_1$, specifically) and $g(x_1) = \mu(x_1) = y_1$, on this interval,
+\[g(x) = g'(x_1) (x-x_1) + y_i = \mu'(x_1) (x-x_1) + y_i = \mu(x) \]
+where the first and third equalities hold since $g$ and $\mu$ are linear on the interval $[a, x_1)$ and differentiable at $x_1$, so their slopes (derivatives) must be equal to their left derivatives at $x_1$, which must be equal to their derivatives at $x_1$, respectively; and the second equality holds because $g'(x_1) = \mu'(x_1)$ since $g = \mu$ on $(x_1, x_2)$ and both $g$ and $\mu$ are differentiable at $x_1$, and so their derivatives at $x_1$ exist and must be equal to their derivatives from the right.
+
+By left derivative, I mean, for a function $f$ at the point $x$, the following quantity: 
+\[ \lim_{h \to 0^-} \tfrac{f(x+h) - f(x)}{h}\]
+and for right derivative, the limit from the right, $\lim_{h \to 0^+}$, is taken instead. 
+
+Hence $g = \mu$ on $[a, x_1]$. The same argument applies to $[x_N, b]$, switching left and right derivatives. 
+
+So $g = \mu$ on $[a,b]$. 
+
+\noindent g. Since $g(x_i) = y_i$ for each $i$, by assumption ($g$ interpolates the points $(x_i, y_i)$), the first term is 0, i.e. 
+\[ \sum_{i=1}^N (y_i - g(x_i))^2 = 0. \]
+
+So, we've reduced the problem to minimizing 
+\[ \int_a^b (g''(x))^2 dx \]
+in $g$, twice differentiable. Now, by 1. f. with the assumption that $g$ is twice differentiable, if there exists a natural cubic spline with interior knots at each $x_i$ also passing through each $(x_i, y_i)$, then 
+\[ \int_a^b (g''(x))^2 dx \geq \int_a^b (\mu''(x))^2 dx, \]
+and equality holds if and only if $g = \mu$, so the minimizer $g$ must be equal to $\mu$.
+
+Hence, it suffices to argue that such a $\mu$ exists. Since natural cubic splines have $K$ degrees of freedom for $K$ knots, and we have $K=N$ knots and $N$ points to fit, the matrix $\boldsymbol{X}$ for the spline is $N \times N$ and has full column rank ($N$ degrees of freedom) so must be invertible. Hence 
+\[ \boldsymbol{X} \hat{\boldsymbol{\beta}} = \boldsymbol{y} \]
+is solved exactly by inverting $\boldsymbol{X}$ and the predictions are 
+\[ (\mu(x_1), \dots, \mu(x_N))^T = \boldsymbol{\mu} = \boldsymbol{X} \hat{\boldsymbol{\beta}} = \boldsymbol{y} \]
+
+
+
+\noindent 2. a.
+
+\[ \mathrm{age}_i = (a_i(t_1) + a_i(t_2))/2 \]
+
+\[ \mathrm{spnbmd}_i = 2(b_i(t_2) - b_i(t_1))/(b_i(t_1) + b_i(t_2)) \]
+
+Note that there are more than just a single pair of $t_1$ and $t_2$ values being used, since multiple `age` values are used for the same `idnum` (see k.v.). So the $t_j$ may depend on $i$. 
+
+\noindent b.
+
+```{r, error=FALSE, echo=FALSE}
+library("ElemStatLearn")
+summary(bone)
+plot(bone$age, bone$spnbmd, col=adjustcolor("firebrick",0.25))
+abline(a=0,b=0,col=adjustcolor("black", 0.5), lwd=2, lty=2)
+```
+
+\noindent c. The vertical positions roughly describe \emph{relative change} (like percentage increase) in spinal bone mineral density from $t_1$ to $t_2$. The horizontal line is of interest, because those that fall below it had their densities decrease, while those above had their densities decrease, and those on the line had no change in their densities. 
+
+Normalizing `spnbmd` by dividing it by $t_2-t_1$ would make sense for small $t_2-t_1$ and allow us to interpret the result as $\tfrac{b_i'(t)}{b_i(t)} = \tfrac{d}{dt} \log b_i(t)$. So, for $t_2-t_1$ small enough, `spnbmd`$_i \sim (t_2-t_1) \tfrac{b_i'(t)}{b_i(t)}$. This is under the assumption that $t_2-t_1$ is roughly constant. If the length of the intervals is not roughly constant, then `spnbmd` is probably not a very useful measure since it depends too much on the length of the intervals. 
+
+\noindent d. Spinal bone mineral density seems to be increasing during this period. 
+
+\noindent e. 
+
+```{r, error=FALSE, warning=FALSE}
+library("ElemStatLearn")
+library(splines)
+x <- bone$age
+y <- bone$spnbmd
+plot(x,y, col=adjustcolor("firebrick",0.25), xlab = "age", 
+     ylab = "spnbmd - proportional change in spinal bone mineral density")
+abline(a=0,b=0,col=adjustcolor("black", 0.5), lwd=2, lty=2)
+fit <- lm(y ~ bs(x, df=5))
+xrange <- extendrange(x)
+xnew <- seq(min(xrange), max(xrange), length.out=4680)
+ypred <- predict(fit, newdata=data.frame(x=xnew))
+lines(xnew, ypred)
+```
+
+
+
+
+\noindent f. Bone mineral density appears to increase at an increasing rate until about 12 or 13 years of age, and then continues to increase, but, at a decreasing rate, until about 20 years of age, after which it remains roughly constant.
+
+(That the curve is negative on the right, past 25 years, suggest that bone mineral density starts to decrease at around that age, but since there is little data at that end of the graph and the result is extrapolated beyond the range of the data, we should remain skeptical of this conclusion.)
+
+
+
+\noindent g. 
+
+```{r, error=FALSE, warning=FALSE}
+library("ElemStatLearn")
+x <- bone$age
+y <- bone$spnbmd
+plot(x,y, col=adjustcolor("firebrick",0.25), xlab = "age", 
+     ylab = "spnbmd - proportional change in spinal bone mineral density")
+abline(a=0,b=0,col=adjustcolor("black", 0.5), lwd=2, lty=2)
+fit.loess <- loess(y~x, enp.target=5)
+xrange <- extendrange(x)
+xnew <- seq(min(xrange), max(xrange), length.out=4680)
+ypred <- predict(fit.loess, newdata=data.frame(x=xnew))
+lines(xnew, ypred)
+```
+
+
+
+\noindent h. Both use polynomial fits, i.e. `bs` and `loess` use degree 3 and 2 polynomials by default, but the smoothing splines use lower degree polynomials for the exterior intervals, and in particular, error=FALSE, by default, straight lines. In the graph from e., the spline even extrapolates beyond the range of the $x$ values. In fact, the left sides of both graphs seem to agree very well if you ignore the line segment in e. for the spline curve that extends past the least $x$ value. However, error=FALSE, on the right side, the spline curve in e. is negative and decreasing, while the loess curve in g. is positive and increasing. There seems ot be an outlier on the right side that could be pulling the loess curve up, while the spline gives too much weight to the nearby data which gave a negative slope and no weight to data further left, both forcing to the slope to be negative (since the slope must remain the same at the knot) and preventing the slope from increasing and returning the curve to 0 (as a straight line). I suspect both are wrong, and if we had more data, it would be approximately horizontal at $y=0$, until perhaps much later in life (after which it might decrease).
+
+
+\noindent i. 
+
+```{r, error=FALSE, warning=FALSE}
+library("ElemStatLearn")
+library(splines)
+males <- bone$gender=="male"
+females <- !males
+xm <- bone$age[males]
+ym <- bone$spnbmd[males]
+xf <- bone$age[females]
+yf <- bone$spnbmd[females]
+plot(x,y, col=adjustcolor("firebrick",0.25), xlab = "age", 
+     ylab = "spnbmd - proportional change in spinal bone mineral density")
+abline(a=0,b=0,col=adjustcolor("black", 0.5), lwd=2, lty=2)
+fit.mloess <- loess(ym~xm)
+xmrange <- extendrange(xm)
+xmnew <- seq(min(xmrange), max(xmrange), length.out=4680)
+ympred <- predict(fit.mloess, newdata=data.frame(xm=xmnew))
+lines(xmnew, ympred, col="blue", lwd=2)
+fit.floess <- loess(yf~xf)
+xfrange <- extendrange(xf)
+xfnew <- seq(min(xfrange), max(xfrange), length.out=4680)
+yfpred <- predict(fit.floess, newdata=data.frame(xf=xfnew))
+lines(xfnew, yfpred, col="red", lty=4, lwd=2.5)
+legend(22,0.2, legend = c("males", "females"), lty=c(1,4),lwd=c(2,2.5),col=c("blue","red"))
+```
+
+
+\noindent j. The curves are similar in shape, so that the percentage increases in spinal bone mineral density themselves increase and peak between ages 11 and 15, and then decreases until spinal bone mineral density becomes roughly constant by 22 years of age. However, error=FALSE, the females' proportional increase in spinal bone mineral density peaks earlier than the males (around 11-12 vs 14), and the relative increase drops earlier than boys, so that they hit their peak spinal bone mineral density (not the change) at around 16-17, but for males, it's at around 21-22.
+
+I suspect this is because girls start puberty and hit their ``growth spurt" earlier than boys. 
+
+
+\noindent k.
+
+    ```{r, error=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
+    library(loon)          # for interactive graphics
+    library(ElemStatLearn) # for data set
+    library(splines)       # for smooth fitting code.
+    # The plot
+    x <- bone$age
+    xOrder <- order(x)
+    y <- bone$spnbmd
+    # Some plots
+    p <- l_plot(x, y,
+                color="firebrick",
+                xlabel="age", ylabel="spnbmd",
+                linkingGroup="Bone density",
+                title = "Watch here")
+                
+    p2 <- l_plot(bone$idnum, bone$gender,
+                 color="firebrick",
+                 xlabel="idnum", ylabel="gender",
+                 linkingGroup="Bone density",
+                 title = "p2 -- Brush here")
+                
+    p3 <- l_plot(bone$idnum,  bone$age,  
+                 color="firebrick",
+                 xlabel="idnum", ylabel="age",
+                 linkingGroup="Bone density",
+                 title = "p3 -- Brush here")
+                 
+    axis <- l_layer_line(p,
+                         x=extendrange(x), y=c(0,0),
+                         label="axis", linewidth=1,
+                         color = "black",
+                         dash=c(10,10),
+                         index="end")   # last argument places axis behind other layers
+                 
+    # Fit a smoothing spline
+    fitsmooth <- smooth.spline(x, y, df=5)
+    smooth <- l_layer_line(p,
+                           x=x[xOrder],
+                           y=predict(fitsmooth,x=x[xOrder])$y,
+                           label="smooth fit", linewidth=4,
+                           color = "black")
+                           
+    # Fit a local line using some predetermined Gaussian weights
+    # These are constructed *only* for the present brushing illustration
+    # 
+    GaussWt <- function(x) {
+                    # Get an SD
+                    h <- diff(range(x))/4
+                    # Centre at median
+                    xloc <- median(x)
+                    # Normal density
+                    dnorm(x, mean=xloc, sd=h)
+                    }
+    # Fit a line at the median of x downweighting by x
+    # distance from the median.
+    fitwls <- lm(y ~ x, weights=GaussWt(x))
+    linewls <- l_layer_line(p,
+                           x=x,
+                           y=predict(fitwls,newdata=data.frame(x=x)),
+                           label="GaussWt at median line", linewidth=4,
+                           color = "blue"
+                           )
+
+    updateFits <- function(p, minpts, df) {
+        ## For x
+        xnew <- p['xTemp']
+        if (length(xnew) == 0) {xnew <- p['x']}
+        
+        ## For y
+        ynew <- p['yTemp']
+        if (length(ynew) == 0) {ynew <- p['y']}
+        
+        ## use only the selected points for the fits
+        sel <- p['selected']
+        xnew <- xnew[sel]
+        ynew <- ynew[sel]
+        Nsel <- sum(sel)
+        if (Nsel > 3 & diff(range(xnew)) > 0) {
+            xrng <- extendrange(xnew)
+            xvals.temp <- seq(from=min(xrng),
+                              to=max(xrng), 
+                              length.out=100)
+            ## Redo line if more than two points.
+            if (Nsel> 2) {
+                fit.wls <-  lm(ynew ~ xnew, weights=GaussWt(xnew))
+                ywls.temp <- predict(fit.wls,
+                                     newdata=data.frame(xnew=xvals.temp))
+                ## update the fit
+                if (linewls %in% l_layer_ids(p)) {
+                  l_configure(linewls, x=xvals.temp, y=ywls.temp)
+                } else {
+                ## If it's been deleted, we recreate it (in the global environment).
+                linewls <<- l_layer_line(p,
+                                         x=xvals.temp,
+                                         y=predict(fitwls,
+                                                   newdata=data.frame(x=xvals.temp)
+                                                   ),
+                                         label="GaussWt at median line", 
+                                         linewidth=4,
+                                         color="blue"
+                                         )
+                }
+            }
+        
+            ## Redo our smooth only if we have enough points
+            if ((Nsel > minpts) & (minpts > (df + 1))){
+                fit.temp <- smooth.spline(xnew, ynew, df=df)
+                ypred.temp <- predict(fit.temp,x=xvals.temp)$y
+                ## update the smooth
+                if (smooth %in% l_layer_ids(p)) {
+                  l_configure(smooth, x=xvals.temp, y=ypred.temp)
+                } else {
+                  ## If it's been deleted, we recreate it (in the global environment)
+                  smooth <<-  l_layer_line(p,
+                                           x=xvals.temp, 
+                                           y=ypred.temp,
+                                           label="smooth fit", 
+                                           linewidth=4,
+                                           color = "black")
+                } 
+           }
+        }
+        ## Update the tcl language's event handler
+        tcl('update', 'idletasks')
+        }
+
+    # Here we "bind" the anonymous to the named state changes of p
+    l_bind_state(p, c("active","selected","xTemp","yTemp"),
+                 function() {updateFits(p, 10, 5)}
+                 )
+
+```
+
+
+
+
+```{r, error=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+l_layer_hide(p, smooth)
+```
+
+\noindent i. The gender higher in the plot is male. The line for females is steeper, error=FALSE, and this is probably because the female relative increase in spinal bone mineral density peaks earlier than the male one does (according to i. and j.).
+
+```{r, error=FALSE, echo=FALSE, warning=FALSE} 
+#p ['selected']
+```
+
+
+\noindent ii. The line is estimated by weighted least squares, using only the points in the box, and with Gaussian weights (centered at the median of the $x$-values in the box and standard deviation equal to a quarter of the difference of the max and min $x$-values in that box; note that the weights are recalculated in updateFits).
+
+The path being followed is approximately that of a constant width neighborhood local line fit, but the neighbourhoods (intervals) overlap, and (local) weight are used. This is because it fits a line (`fit.wls`) only to the selected data, which contains an interval of the $x$-values since we extended the brush box to cover the whole width-of the `age` vs `idnum` plot, i.e. the interval used is the $[a, b]$, where $a$ is the `age` value at the bottom of the selection box, and `b` is the value at the top. 
+
+
+
+
+\noindent iii. In all cases, it's a cubic smoothing spline with 5 effective degrees of freedom fit to the selected data. When all data is selected, it's the fit for all the data, and I'd expect the fit to be the same as that in e. (the spline), but it looks more like that in g. (the loess fit), since the curve is positive and increasing on the right rather than decreasing. When the top group is selected in p2, the fit is done on the males, and when the bottom group is, the fit is done for the females. These are similar to the fits in i (but again, splines instead of loess). 
+
+```{r, error=FALSE, echo=FALSE, warning=FALSE}
+l_layer_hide(p, linewls)
+l_layer_show(p, smooth)
+```
+
+
+
+\noindent iv. The curve follows a cubic smoothing spline with 5 effective degrees of freedom fit only to the selected points, which are contained in a thin interval. It looks like there are too many degrees of freedom, and the curves are overfitted. With much more data, overfitting would presumably be reduced, and narrower brushes could be used, with the predicted value (`spnbmd`) at each $x$ value (`age`) tending towards the expected value of the underlying distribution (assuming one exists). 
+
+
+\noindent v. There are 1-3 different `ages` per `idnum`. The `age` covariate itself is the average of two actual measured ages, potentially shared between different `age` covariates for the same individual (`idnum`), i.e. $t_1$ and $t_2$, and $t_2$ and $t_3$ could be used together. So 2-6 age measurements were made per indiviudal, and it's possible that for those with 3 `age` values, as little as 4 actual ages were used, and for those with 2 `age` values, as little as 3 were used. 
+
+My guess would be that the spinal bone mineral density was supposed to be measured 4 times for each individual, at times $t_1, t_2, t_3, t_4$ with $t_{j+1}-t_j$ constant for each $j=1,2,3$, and consecutive visits, $t_j, t_{j+1}$ were used to compute `spnbmd` and `age`, as this is the most efficient use of the measurements with constant spacing (using intervals of widely different lengths would give results that aren't meaningful, as discussed in c. That some individuals have fewer measurements is an indication that they either joined the study late, dropped out early. The gaps between consecutive `age` values are constant across individuals. 
+
+
+
+
+
+\noindent 3. a. i. The polynomial degree is 2 by default.
+
+\noindent ii. The default span is 0.75. This completely smoothes out the jagged periodic bumps (whereas a much smaller span would leave some bumps), and the curve nearly passes through the centre of each bump (whereas a much larger span gives a curve which is closer to linear). 
+
+\noindent iii. The default weight function is Tukey's tricube weight since, by default, $\alpha=$ `span` $=0.75 < 1$. I.e., the weight is $K(t_i) = (1-|t_i|^3)^3$, $t_i = \tfrac{|x_i - x|}{\max_{x_j \in Nbhd(x)} |x_j - x|}$, for $x_i \in Nbhd(x)$ and $|t_i| \leq 1$, and the weight is 0 otherwise. (The weights may be normalized to sum to 1; this does not change the fit).
+
+
+\noindent iv.
+
+```{r, error=FALSE, echo=FALSE, warning=FALSE}
+tco2 <- as.vector(time(co2))
+plot(tco2, co2, type="l",
+     col="grey10", main = "Mauna Loa Atmospheric CO2 Concentration", 
+     ylab="CO2 concentration", xlab="time (years)")
+x <- tco2
+y <- co2
+fitls <- loess(y~x)
+#plot(tco2, co2, type="p", cex=0.5,
+#     col="grey10", main = "Mauna Loa Atmospheric CO2 Concentration")
+xrange <- extendrange(x)
+xnew <- seq(min(xrange), max(xrange), length.out=500)
+ypred <- predict(fitls, newdata=data.frame(x=xnew))
+lines(xnew, ypred)
+```
+
+
+\noindent v. CO2 levels have been increasing - at an increasing rate - over Mauna Loa since 1960.
+
+\noindent vi. Since the time values are measured in years and are actually multiples of 1/12, starting from 1959 (or, error=FALSE, 1959+1/12 for the plot), what the plot depicts is the monthly change in \emph{predicted} (by the loess fit) CO2 concentration in Mauna Lau. Dividing the y-values by 1/12 would give an approximation of the derivative of the CO2 concentration with respect to time. So, the fact that the plot is positive tells us that the predicted CO2 concentration is increasing, and the fact that the plot is mostly increasing tells us that the predicted CO2 concentration is increasing at an increasing rate, up until about 1980. From a little after 1980 on, the difference plot becomes nearly constant, suggesting that the CO2 concentration started increasing at a roughly linear rate (and actually sublinear, error=FALSE, because the difference plot is roughly decreasing after around 1980).
+
+```{r, error=FALSE, warning=FALSE}
+plot(tco2[-1], diff(predict(fitls)), type="l", lwd=2, col="firebrick", 
+     main = "Monthly Change in Predicted Atmospheric CO2 Concentration in Mauna Lau", 
+     ylab="CO2 concentration", xlab="time (years)")
+```
+
+\noindent b. 
+
+```{r, error=FALSE, warning=FALSE}
+#res = fitls$residuals
+res = y-predict(fitls)
+```
+
+\noindent i.
+
+```{r, error=FALSE, echo=FALSE, warning=FALSE}
+plot(x, res, main = "loess fit residuals vs time", ylab="residual", xlab="time (years)")
+```
+
+The residuals look almost uniform in the interval [-4,4], but they should be periodic. Also, it seems the variance (or spread of the residuals) is slowly increasing in time, with all residuals fitting tightly in [-3.4,3.4] at the beginning of this record, but requring at least an interval containing [-4,4] to contain the residuals after 1990. 
+
+\noindent ii. There's a periodic zig-zag pattern. 
+
+```{r, error=FALSE, echo=FALSE, warning=FALSE}
+p <- l_plot(x, res)
+```
+
+\includegraphics{3bii.pdf}
+
+\includegraphics{3bii2.pdf}
+
+
+
+
+
+\noindent iii. 
+
+```{r, error=FALSE, warning=FALSE}
+plot(x, res, main="Residuals vs time", xlab="time (years)", ylab="residual")
+lines(x[13:length(x)],res[13:length(x)])
+```
+
+
+
+
+
+
+
+
+\noindent iv. `span` $= \alpha$ is the proportion of all the points in the neighbourhoods (when $<1$), so that when $0.01$, there will be roughly $5 \approx 0.01 \times 468$ points per neighbourhood, and since the points are equi-spaced, this means the $\sim 5$ nearest neighbours will be used. 
+
+\noindent v. Almost all of the circles used to represent each residual point interesects the prediction curve, so this says the curve passes very close to the residuals. There are only a handful, unsurprisingly the most extreme residuals (in $y$-space; the peaks) that miss the curve. This is to be expected because all of their neighbours are closer to 0 and the fit is meant to smooth over this sharp change. 
+
+```{r, error=FALSE, warning=FALSE}
+resfit <- loess(res~x, span=5/468)
+plot(x, res, main="Residuals and predicted residual curve vs time", 
+     xlab="time (years)", ylab="residual")
+xrange <- extendrange(x)
+xnew <- seq(min(xrange), max(xrange), length.out=4680)
+ypred <- predict(resfit, newdata=data.frame(x=xnew))
+lines(xnew, ypred)
+```
+
+\noindent vi. There are oscillations, with a good proportion of the residuals close to 0, but these oscillations don't appear very regular. The magnitude of the residuals is greater near the right end of the graph. There doesn't seem to be much structure otherwise, though. 
+
+```{r, error=FALSE, warning=FALSE}
+plot(x, resfit$residuals, main="Residuals of of the residual fit vs time", 
+     xlab="time (years)", ylab="residual")
+lines(x[13:length(x)],resfit$residuals[13:length(x)])
+```
+
+\noindent c. The atmospheric CO2 concentration in Mauna Lau has been following a generally increasing trend from 1959 to 1998 with periodic fluctuations of period equal to a year. Until around 1980, the concentration of CO2 was increasing with some acceleration, but since 1980, the yearly increase has become roughly constant. 
+
+
+
+\noindent d. 
+
+```{r, error=FALSE, warning=FALSE}
+plot(tco2, co2, type="l",
+     col="grey10", main = "Mauna Loa Atmospheric CO2 Concentration", 
+     ylab="CO2 concentration", xlab="time (years)")
+x <- tco2
+y <- co2
+fit.long <- loess(y~x, span=0.75)
+fit.short <- loess(y~x, span=0.1)
+```
+
+
+
+```{r, error=FALSE, warning=FALSE}
+smootherMatrixLoess <- function(x,span=NULL,enp.target=NULL,...) {
+  n <- length(x)
+  S <- matrix(0, n, n)
+  for (i in 1:n) {
+    ei = rep(0, n)
+    ei[i] <- 1
+    # insert the fit into the i'th column of S
+    if (is.null(span) & is.null(enp.target)){
+      S[,i] <- predict(loess(ei ~ x, ...))
+      } else {
+        if (is.null(span)) {
+          S[,i] <- predict(loess(ei ~ x,
+                                 enp.target=enp.target,...))
+          } else {
+            S[,i] <- predict(loess(ei ~ x,span=span,...))
+          }
+        }
+    }# For loess, the smoother matrix need
+# not be a symmetric matrix
+return(S)
+}
+
+S.long <- smootherMatrixLoess(x,span=0.75)
+S.short <- smootherMatrixLoess(x,span=0.1)
+```
+
+\noindent i. 
+
+```{r, error=FALSE, warning=FALSE}
+plot(x, S.long[150,], type="l", main="Two rows of S.long", ylab="Coefficient of y")
+points(x, S.long[350,], type="l")
+abline(v=x[150])
+abline(v=x[350])
+```
+
+
+```{r, error=FALSE, warning=FALSE}
+svd.long <- svd(S.long)
+plot(1:100, svd.long$d[1:100], main="First 100 singular values of S.long", 
+     type="b", col=adjustcolor("firebrick",0.5), cex=0.5, pch=19, xlab="index", 
+     ylab="rho")
+```
+
+```{r, warning=FALSE, error=FALSE}
+plot((t(svd.long$v) %*% co2)[1:100],
+col=adjustcolor("firebrick",0.5),
+cex=0.5, pch=19,
+type="b", main="First 100 y components for S.long",
+xlab="index", ylab="y-component")
+```
+
+
+```{r, warning=FALSE, error=FALSE}
+parOptions <- par(mfrow=c(2,2))
+ylim <- extendrange(svd.long$u[,5:16]) #columns 5 to 16 of U
+xOrder <- order(x)
+for (i in 5:16) {
+plot(x[xOrder],svd.long$u[xOrder,i],
+type="l", ylim=ylim, col="firebrick",
+main=paste("basis", i), xlab="x", ylab="u value")
+}
+```
+
+
+
+\noindent ii. 
+
+```{r, error=FALSE, warning=FALSE}
+plot(x, S.short[150,], type="l", main="Two rows of S.short", ylab="Coefficient of y")
+points(x, S.short[350,], type="l")
+abline(v=x[150])
+abline(v=x[350])
+```
+
+```{r, error=FALSE, warning=FALSE}
+svd.short <- svd(S.short)
+plot(1:100, svd.short$d[1:100], main="First 100 singular values of S.short", 
+     type="b", col=adjustcolor("firebrick",0.5), cex=0.5, pch=19, xlab="index", 
+     ylab="rho")
+```
+
+```{r, warning=FALSE, error=FALSE}
+plot((t(svd.short$v) %*% co2)[1:100],
+col=adjustcolor("firebrick",0.5),
+cex=0.5, pch=19,
+type="b", main="First 100 y components for S.short",
+xlab="index", ylab="y-component")
+```
+
+
+```{r, warning=FALSE, error=FALSE}
+parOptions <- par(mfrow=c(2,2))
+ylim <- extendrange(svd.short$u[,5:16]) #columns 5 to 16 of U
+xOrder <- order(x)
+for (i in 5:16) {
+plot(x[xOrder],svd.short$u[xOrder,i],
+type="l", ylim=ylim, col="firebrick",
+main=paste("basis", i), xlab="x", ylab="u value")
+}
+```
+
+
+\noindent iii.
+
+```{r, warning=FALSE, error=FALSE, echo=FALSE}
+parOptions <- par(mfrow=c(1,2))
+
+plot(x, S.long[150,], type="l", main="Two rows of S.long", ylab="Coefficient of y")
+points(x, S.long[350,], type="l")
+abline(v=x[150])
+abline(v=x[350])
+
+plot(x, S.short[150,], type="l", main="Two rows of S.short", ylab="Coefficient of y")
+points(x, S.short[350,], type="l")
+abline(v=x[150])
+abline(v=x[350])
+```
+The curves are similar in shape, but `S.short` is much narrower on the corresponding $x$ values than is `S.long`. 
+
+```{r, warning=FALSE, error=FALSE, echo=FALSE}
+parOptions <- par(mfrow=c(1,2))
+svd.long <- svd(S.long)
+plot(1:100, svd.long$d[1:100], main="First 100 singular values of S.long", 
+     type="b", col=adjustcolor("firebrick",0.5), cex=0.5, pch=19, xlab="index", 
+     ylab="rho")
+
+svd.short <- svd(S.short)
+plot(1:100, svd.short$d[1:100], main="First 100 singular values of S.short", 
+     type="b", col=adjustcolor("firebrick",0.5), cex=0.5, pch=19, xlab="index", 
+     ylab="rho")
+```
+
+The singular values of `S.long` drop off to 0 much more quickly (by the $\sim15$th) than those of `S.long` (at around the $\sim100$th). `S.short`'s singular values decrease somewhat nonsmoothly, too, at around the 45th and the 63rd. This is because the `S.long`, with a larger span, gives a smoother fit, and so greater weight is given to the smoother basis functions, regardless of the $y$ values. 
+
+```{r, warning=FALSE, error=FALSE, echo=FALSE}
+parOptions <- par(mfrow=c(1,2))
+plot((t(svd.long$v) %*% co2)[1:100],
+col=adjustcolor("firebrick",0.5),
+cex=0.5, pch=19,
+type="b", main="First 100 y components for S.long",
+xlab="index", ylab="y-component")
+
+plot((t(svd.short$v) %*% co2)[1:100],
+col=adjustcolor("firebrick",0.5),
+cex=0.5, pch=19,
+type="b", main="First 100 y components for S.short",
+xlab="index", ylab="y-component")
+```
+`S.long` has more extreme $y$-components, but they also drop off to 0 earlier than do `S.short`'s, which also seem to oscillate around 0. This further indicates that the `S.long`'s fit will be even smoother (giving greater weight to smoother basis functions) than do the singular values alone, and suggests that `S.long` depends more on its smoothest basis functions than does `S.short` for these particular $y$ values beyond what the singular values suggest, so that its smoothest functions fit the data better than do $S.short$'s or its less smooth functions are less useful than are `S.short`'s, or both. 
+
+
+\noindent iv. The basis functions look similar, and all become less smooth (more bumps and changes in sign of slope) as the corresponding singular value decreases, so that smoother basis functions are given greater weight than less smooth ones. `S.long`'s appear less smooth and less symmetric/periodic than `S.short`'s. Since `S.short`'s 5th-16th greatest singular values are greater than `S.long`'s, `S.short` gives greater weight to its corresponding basis vectors than does `S.long`.

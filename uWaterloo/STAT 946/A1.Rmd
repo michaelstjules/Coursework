@@ -1,0 +1,204 @@
+---
+title: "STAT 946 - Assignment 1"
+author: "Michael St. Jules"
+date: "February 27, 2017"
+output: pdf_document
+---
+
+\noindent $\boldsymbol{1. \ i.}$ For all $x,y,z$,
+\begin{align*}
+p_{YX|Z}(y,x|z) &= p_{XY|Z}(x,y|z) \\
+&= p_{X|Z}(x|z)p_{Y|Z}(y|z) \text{ , since } X \perp Y | Z \\
+&= p_{Y|Z}(y|z)p_{X|Z}(x|z),
+\end{align*}
+so $Y \perp X | Z$
+
+\bigskip
+
+\noindent $\boldsymbol{ii.}$ I'll use the integral notation. Then, for all $u,y,z$,
+\begin{align*}
+p_{U|Y,Z}(u|y,z) &= \int_{h^{-1}({u})} p_{X|Y,Z}(x|y,z) dx \\
+&= \int_{h^{-1}({u})} p_{X|Z}(x|z) dx \text{ since } X \perp Y | Z \\
+&= p_{U|Z}(u|z),
+\end{align*}
+so $U \perp Y | Z$. 
+
+\bigskip
+
+\noindent $\boldsymbol{iii.}$ In fact, $U \perp Y | (Z,U)$ without any further conditions on these random variables. For all $u,y,z, u'$,
+\begin{align*}
+p_{U,Y|Z,U}(u,y|z,u') 
+&= \begin{cases} p_{Y|Z,U}(y,|z,u') , & \text{ if } u=u' \\
+0 , & \text{ otherwise.} 
+\end{cases} \\
+&= p_{Y|Z,U}(y|z,u') \times \begin{cases}  1, & \text{ if } u=u' \\
+0 , & \text{ otherwise.} 
+\end{cases} \\
+&= p_{Y|Z,U}(y|z,u') \times p_{U|Z,U}(u|z,u'),
+\end{align*}
+so $U \perp Y | (Z,U)$.
+
+\bigskip
+
+\noindent $\boldsymbol{iv.}$ For all $x,w,y,z$, \[p_{X|W,Y,Z}(x|w,y,z) = p_{X|Y,Z}(x|y,z) = p_{X|Z}(x|z), \]
+where the first inequality follows since $X \perp W | (Y,Z)$, and the second, because $X \perp (W,Y) | Z \implies X \perp Y | Z$: let $W$ take values in $\mathcal{W}$, then 
+\begin{align*}
+P(X \in A, Y \in B | Z \in C) &= P(X \in A, W \in \mathcal{W}, Y \in B | Z \in C) \\
+&= P(X \in A | Z \in C) P(W \in \mathcal{W}, Y \in B | Z \in C) \text{ since } X \perp (W,Y) | Z \\
+&= P(X \in A | Z \in C) P(Y \in B | Z \in C), 
+\end{align*}
+
+\bigskip
+
+\noindent $\boldsymbol{v.}$ For all $x, y, z$, 
+\[ p_{X|Y,Z}(x|y,z) = p_{X|Z}(x|z), \text{ since } X \perp Y | Z, \text{ and} \]
+\[ p_{X|Y,Z}(x|y,z) = p_{X|Y}(x|y), \text{ since } X \perp Z | Y, \]
+so $p_{X|Y,Z}$ is constant in both $y$ and $z$. Formally, consider $x, y,y', z, z'$. Then,
+\[p_{X|Y,Z}(x|y,z) = p_{X|Z}(x|z) = p_{X|Y,Z}(x|y',z) = p_{X|Y}(x|y') = p_{X|Y,Z}(x|y',z'), \]
+so $g(x) := p_{X|Y,Z}(x|y,z)$ is well-defined. Then
+\[ p_X(x) = \int p_{X|Y,Z}(x|y,z) p(y,z) dy dz = \int g(x) p(y,z) dy dz =  g(x) \int p(y,z) dy dz = g(x) \cdot 1 = p_{X|Y,Z}(x|y,z), \]
+and hence $X \perp (Y,Z)$. 
+
+\bigskip
+
+\noindent $\boldsymbol{2. \ a)}$ The joint density is \[ f_{X, Z_1, Z_2, Z_3, Z_4, Y_1, Y_2, Y_3, Y_4} (x, z_1, z_2, z_3, z_4, y_1, y_2, y_3, y_4) = f_X(x) \prod_{i=1}^4 f_{Z_i}(z_i) f_{Y_i|X, Z_i}(y_i|x,z_i) \]
+
+\bigskip
+
+\noindent $\boldsymbol{b.}$ I use the summation notation since it's more compact, but the same proof works for integrals. By repeated use of distributivity,
+
+\begin{align*}
+f_{X,Z_j}(x,z_j) &= \sum_{z_{i_{i \neq j}}, \ y_{i_{i=1,2,3,4}}} f_X(x) \prod_{i=1}^4 f_{Z_i}(z_i) f_{Y_i|X, Z_i}(y_i|x,z_i) \\
+&= f_X(x) f_{Z_j}(z_j) \sum_{z_{i_{i \neq j}}, \ y_{i_{i=1,2,3,4}}} f_{Y_j|X, Z_j}(y_j|x,z_j) \prod_{i \neq j} f_{Z_i}(z_i) f_{Y_i|X, Z_i}(y_i|x,z_i) \\
+&= f_X(x) f_{Z_j}(z_j) \bigg( \sum_{y_j} f_{Y_j|X, Z_j}(y_j|x,z_j) \bigg) \prod_{i\neq j} \sum_{z_i} \bigg( f_{Z_i}(z_i) \sum_{y_i} f_{Y_i|X, Z_i}(y_i|x,z_i) \bigg) \\
+&= f_X(x) f_{Z_j}(z_j) (1) \prod_{i\neq j} \sum_{z_i} \bigg( f_{Z_i}(z_i) 1 \bigg) \\
+&= f_X(x) f_{Z_j}(z_j)  \prod_{i\neq j} 1 \\
+&= f_X(x) f_{Z_j}(z_j),
+\end{align*}
+and so $X \perp Z_j$ for each $j$. 
+
+\bigskip
+
+\noindent $\boldsymbol{3.}$ I define the joint distribution as $f(x,y,z) = p_X(x) p_{Y|X}(y|z) p_{Z|Y}(z|y)$, where
+\[ p_X(0) = p_X(1) = \tfrac{1}{2} \]
+\[ p_{Y|X}(1|x) = \tfrac{1}{2^{x+1}}; \ \ p_{Y|X}(0|x) = 1-\tfrac{1}{2^{x+1}}\]
+\[ p_{Z|Y}(0|y) = \tfrac{1}{3^{y+1}}; \ \ p_{Z|Y}(1|y) = p_{Z|Y}(2|y) = \tfrac{1}{2} \big(1- \tfrac{1}{3^{y+1}} \big) \]
+
+
+```{r}
+pX <- function(){ #returns (p_X(0),p_X(0))
+  return(c(1/2,1/2))
+}
+
+pY_X <- function(x){ #returns (p_{Y|X}(0|x), p_{Y|X}(1|x))
+  p1 = 1/(2^(x+1.))
+  return(c(1-p1,p1))
+}
+
+pZ_Y <- function(y){ #returns (p_{Z|Y}(0|y),p_{Z|Y}(1|y),p_{Z|Y}(2|y))
+  p0 = 1/(3^(y+1))
+  p12 = (1-p0)/2
+  return(c(p0,p12,p12))
+}
+
+theta <- function(i,j,k){ #returns \theta_{ijk}
+  pX()[i+1]*pY_X(i)[j+1]*pZ_Y(j)[k+1] #indexing
+}
+
+#estimate theta using samples
+n=1000
+x <- vector('numeric',n)
+y <- vector('numeric',n)
+z <- vector('numeric',n)
+
+for(i in 1:n){
+  x[i] <- sample(c(0,1), 1, prob = pX())
+  y[i] <- sample(c(0,1), 1, prob = pY_X(x[i]))
+  z[i] <- sample(c(0,1,2), 1, prob = pZ_Y(y[i]))
+}
+
+theta.hat <- array(0,dim=c(2,2,3))
+
+for(i in 1:2){
+  for(j in 1:2){
+    for(k in 1:3){
+      theta.hat[i,j,k] <- sum(x==i-1 & y==j-1 & z==k-1)/n #R doesn't like 0 indices
+    }
+  }
+}
+
+# implement basic bootstrap by hand; with replacement
+n.bootstrap.samples=1000 #number of boostrap samples
+size.bootstrap=1000 #size of bootstrap samples
+bootstrap.sample.averages <- array(data = NA, dim = c(n.bootstrap.samples,2,2,3))
+se <- array(data = NA, dim = c(2,2,3))
+CI <- array(data = NA, dim = c(2,2,3,2))
+
+a = 0.05 #95% confidence interval
+
+for(l in 1:n.bootstrap.samples){
+  boostrap.indices <- sample(n, size.bootstrap, replace=TRUE)
+  x.b <- x[boostrap.indices]
+  y.b <- y[boostrap.indices]
+  z.b <- z[boostrap.indices]
+  for(i in 1:2){
+    for(j in 1:2){
+      for(k in 1:3){
+        bootstrap.sample.averages[l,i,j,k] <- 
+          sum(x.b==i-1 & y.b==j-1 & z.b==k-1)/size.bootstrap
+      }
+    }
+  }
+}
+index=1
+thetas <- vector('numeric',12)
+theta.hats <- vector('numeric',12)
+ses <- vector('numeric',12)
+CI.L <- vector('numeric',12)
+CI.U <- vector('numeric',12)
+in.CI <- vector('logical',12)
+cols <- c("theta", "theta.hat", "L", "U", "theta in CI", "se")
+rows <- vector('character',12)
+for(i in 1:2){
+  for(j in 1:2){
+    for(k in 1:3){
+      ses[index] <- sd(bootstrap.sample.averages[,i,j,k])
+      CI.L[index] <- 2*theta.hat[i,j,k] - 
+        quantile(bootstrap.sample.averages[,i,j,k], probs = c(1-a/2))
+      CI.U[index] <- 2*theta.hat[i,j,k] - 
+        quantile(bootstrap.sample.averages[,i,j,k], probs = c(a/2))
+      thetas[index] <- theta(i-1,j-1,k-1) #indexing
+      theta.hats[index] <- theta.hat[i,j,k]
+      in.CI[index] <- (thetas[index] <= CI.U[index] & thetas[index] >= CI.L[index])
+      rows[index] <- paste(i-1,j-1,k-1, sep="")
+      index=index+1
+    }
+  }
+}
+output <- data.frame(thetas, theta.hats, CI.L, CI.U, in.CI, ses, row.names=rows)
+colnames(output) <- cols
+print(output)
+```
+
+`theta[i,j,k]`$= \theta_{ijk}$ is in the confidence interval calculated using bootstrap and the `theta.hat[i,j,k]`$=\hat{\theta}_{ijk}$ most of the time (hopefully 95% of the time if I repeat this), so the calculated and true distributions are pretty close. 
+
+\bigskip
+
+\noindent $\boldsymbol{4.}$ Let $p_X(0) = p_X(1) = \tfrac{1}{2}$, and $C_0, C_1$ and $Y$ be given by the following table (each is constant, given $X=x$):
+\[\begin{array}{|l c c c|}
+X & C_0 & C_1 & Y \\
+0 & 1 & 0 & 1 \\
+1 & 3 & 2 & 2
+\end{array}\]
+Then 
+\[\alpha = \mathbb{E}[Y|1] - \mathbb{E}[Y|0] = 2-1 = 1 > 0, \text{ and }\]
+\[ \theta = \mathbb{E}[C_1] - \mathbb{E}[C_0] = (0 \cdot \tfrac{1}{2} + 2 \cdot \tfrac{1}{2}) - (1 \cdot \tfrac{1}{2} + 3 \cdot \tfrac{1}{2}) = 1 - 2 = -1 < 0. \]
+
+\bigskip 
+
+\noindent $\boldsymbol{5.}$ \belowdisplayskip=0pt \abovedisplayskip=0pt \begin{align*}
+P(Y\leq y, X=x) &= P(Y\leq y | X=x) P(X=x) = P(C_x \leq y | X=x) P(X=x) \\
+&= P(C_x \leq y) P(X=x) \text{ since } (C_0, C_1) \perp X \text{ by random assignment} \\
+&= F_x(y)p_X(x)
+\end{align*}
+So $F_x(y) = \tfrac{P(Y\leq y, X=x)}{p_X(x)} = \tfrac{\int_{-\infty}^y p_{XY}(x,y') dy'}{\int_{-\infty}^\infty p_{XY}(x, y') dy'}$, which depends only on the joint distribution of $X$ and $Y$. Then $m_0 = F_0^{-1}(1/2)$ and $m_1 = F_1^{-1}(1/2)$ can be written in terms of these, and hence $\theta = F_1^{-1}(1/2) - F_0^{-1}(1/2)$, too. 

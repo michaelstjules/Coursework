@@ -1,0 +1,404 @@
+---
+title: "CM 764 - Assignment 2"
+author: "Michael St. Jules"
+date: "January 30, 2017"
+output: pdf_document
+bibliography: A2.bib
+header-includes:
+- \usepackage{graphicx}
+- \usepackage{color}
+- \usepackage{hyperref}
+- \usepackage{epic}
+- \PassOptionsToPackage{pdfmark}{hyperref}\RequirePackage{hyperref}
+- \newcommand{\tr}[1]{{#1}^{\mkern-1.5mu\mathsf{T}}}
+- \renewcommand{\bf}[1]{\mathbf{#1}}
+---
+
+\noindent 1. 
+
+\noindent a. The plots use different intervals for $y$: 0 to 8 vs -150 to 150.
+
+\noindent  b.
+
+```{r echo=FALSE, warning=FALSE}
+myDirectory <- "/Users/Mike/Desktop/CM 764/A2/"
+datafile <- "facebook.csv"
+completePathname <- paste0(myDirectory, datafile)
+facebook <- read.csv(completePathname)
+fb = na.omit(facebook)
+source("/Users/Mike/Desktop/CM 764/A2/plotGenFuns.R")
+```
+
+\noindent i. 
+
+```{r, warning=FALSE}
+x <- log(fb$Impressions)
+y <- log(fb$like +1)
+fit2 <- lm(y ~ poly(x, degree=3))
+summary(fit2)
+```
+
+\noindent ii. `poly(x, degree=d)` applies \emph{orthogonal} polynomials of degree 1 to degree $d$ to $x$, rather than simply the standard $x^k$ for $k=1, \dots, d$, so `fit2` uses these polynomials instead of the standard ones. However, since the polynomials used by poly(x, degree=d) with the constant 1 polynomial, and $1, x, x^2, \dots, x^d$ are both bases for the same $d+1$-dimensional space of polynomials of degree $d$ or less, the lines predicted by `fit1` and `fit2` will be identical, but the coefficients are different. 
+
+When raw=TRUE in poly, it uses the standard polynomials. See below: 
+```{r, warning=FALSE}
+fit1 <- lm(y ~ x + I(x^2) + I(x^3))
+summary(fit1)
+fit3 <- lm(y ~ poly(x, degree=3, raw=TRUE))
+summary(fit3)
+```
+
+\noindent iii.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, fig.align="center", fig.width=12, fig.height=10}
+    library(RColorBrewer)
+    xmat <- model.matrix(fit2)
+    savePar <- par(mfrow=c(2,2))
+    # Plot the data first
+    xOrder <- order(x)
+    plot(x, y, main = "Facebook",
+     xlab = "log(Impressions)",
+     ylab = "log(like+1)",
+     pch=19,
+     col=adjustcolor("firebrick", 0.7)
+    )
+    lines(x[xOrder], predict(fit2)[xOrder], col="darkgrey", lwd=2)
+    # Then the decompositions
+    plotGenFuns(x, xmat, fit2$coef,
+                cols = brewer.pal(length(fit2$coef), "Dark2"))
+    par(savePar)
+    ```
+
+\noindent iv. The generators from `fit1` are the standard polynomials $1, x, x^2, \dots, x^d$, while those from `fit2` are the constant 1 polynomial and \emph{orthogonal} polynomials of degree $1, 2, \cdots, d$. As such, the polynomials can be paired by degree, and the first $k$ polynomials from each set span the $k$-dimensional space of polynomials of degree at most $k-1$. In general, however, a set of $d+1$ orthogonal polynomials spanning the polynomials of degree at most $d$ need not have degrees $0, 1, 2, \cdots, d$. 
+
+\noindent v. The standard polynomials may have rounding issues that the orthogonal ones don't,[@polynomial] but the curves prediced by `fit1` and `fit2` seem pretty indistinguishable, so this didn't seem to be an issue in this case. When the degree is decided in advance and is low, as is our case here, standard polynomials and orthogonal polynomials are about as fast as one another. However, with higher order polynomials or unknown degree, orthogonal polynomials are faster.[@polynomial] When the degree is not decided ahead of time, the coefficients will change with the standard polynomials as the degree changes, but not with orthogonal polynomials.[@polynomial] This is because the columns of the matrix $\bf X$ of orthogonal polynomials are, in fact, roughly orthogonal (their dot products are close to machine epsilon = 2.220446e-16), so that $\tr{\bf X} \bf X$ is diagonal, and had the first column been normalized like the rest, we would have $\tr{\bf X} \bf X = \bf{I}$ and $\boldsymbol\beta = \tr{\bf X} \mathbf y$. Normalized or not, $\beta_k$ is the projection of $\mathbf y$ onto the $k-th$ column of $\bf X$ (which is simply the inner product for every column except the first), which does not depend on the other columns of $\bf X$ (or more orthogonal columns appended to $\bf X$). 
+
+```{r}
+    for(i in 1:4){
+      for(j in 1:i){
+        print(paste("<col", i, ", col", j, "> = ", (xmat[,i]%*%xmat[,j])[1,1], sep=""))
+      }
+    }
+```
+
+In general, orthogonal polynomials would be preferred to the standard polynomials, but in this case, it makes little difference. 
+
+
+\noindent vi. For interpretation, `fit1` is preferred, because the standard polynomials are the simplest and easiest to understand, convey and picture (or plot by hand). For `fit2`, the polynomials are apparently computed recursively. [@rpoly; @sc]
+
+```{r, echo=FALSE}
+    eps <- .Machine$double.eps
+```
+
+However, the tests of significance are not independent with the standard polynomials, while they are with orthogonal polynomials.[@polynomial]
+
+
+\noindent c.
+
+\noindent i. Note that since $\tr{\bf{V}} = \bf{I}_p$ and $\bf{V}$ is $p \times p$, $\bf{V}$ must be invertible, with inverse $\tr{\bf{V}}$ ($\bf{V}$ is injective, so the image of a basis for $\mathbb{R}^p$ under $\bf{V}$ must be linearly independent and hence also a basis for $\mathbb{R}^p$, because its cardinality is the dimension of $\mathbb{R}^p$. The inverse map between these bases extends linearly to $V$'s inverse. Then $\tr{\bf{V}} \bf{V} = \bf{I} \implies \tr{\bf{V}} \bf{V} \bf{V}^{-1} = \bf{V}^{-1} \implies \tr{\bf{V}} = \bf{V}^{-1}$).
+
+\begin{align*}
+\bf{P} &= \bf{X}(\tr{\bf{X}} \bf X)^{-1} \tr{\bf{V}} \\
+&= (\bf{UD} \tr{\bf{V}})(\tr{(\bf{UD} \tr{\bf{V}})} \bf{UD} \tr{\bf{V}})^{-1}\tr{(\bf{UD} \tr{\bf{V}})} \\
+&= \bf{UD} \tr{\bf{V}} (\bf{VD}\tr{\bf U} \bf{UD} \tr{\bf V})^{-1} \bf{VD} \tr{\bf{U}} \\
+&= \bf{UD} \tr{\bf{V}} (\bf{V} \bf{D}^2 \tr{\bf{V}})^{-1} \bf{VD} \tr{\bf{U}} \text{ since } \tr{\bf{U}} \bf U = \bf I \\
+&= \bf{UD} \tr{\bf{V}} (\bf V \bf{D}^2 \tr{\bf{V}})^{-1} \bf{VD} \tr{\bf{U}} \\
+&= \bf{UD} \tr{\bf{V}} \bf V \bf{D}^{-2} \tr{\bf{V}} \bf{VD} \tr{\bf{U}} \text{ since } \bf{D}^2 \text{ must be invertible if } \bf V \bf{D}^2 \tr{\bf{V}} \text{ is, and } \bf{D}^2 \text{ is invertible iff } \bf D \text{ is, and } \tr{\bf{V}} = \bf{V}{-1} \\
+&= \bf{UD} \bf{D}^{-2} \bf{D}\tr{\bf U} \\
+&= \bf{U} \tr{\bf U}
+\end{align*}
+
+
+
+
+\noindent ii. 
+```{r}
+    fit1 <- lm(y ~ x + I(x^2) + I(x^3))
+    xmat <- model.matrix(fit1) #same as cbind(x^0, x, x^2, x^3)
+    svd <- svd(xmat)
+    U <- svd$u
+    P <- U%*%t(U)
+    print(P[1:2,1:5])
+```
+
+
+\noindent iii.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, fig.align="center", fig.width=12, fig.height=10}
+    n = dim(P)[1] #or length(y) or length(x)
+    P.f10 <- P[,1:10]
+    nm9 = n-9
+    P.l10 <- P[,nm9:n]
+    xOrder = order(x)
+
+
+
+    fit.f10 <- lm(y~P.f10-1) #some coefficients not defined because of singularities?
+    xmat <- model.matrix(fit.f10)
+    savePar <- par(mfrow=c(2,2))
+    # Plot the data first
+    plot(x, y, main = "Facebook",
+     xlab = "log(Impressions)",
+     ylab = "log(like+1)",
+     pch=19,
+     col=adjustcolor("firebrick", 0.7)
+    )
+    lines(x[xOrder], predict(fit.f10)[xOrder], col="darkgrey", lwd=2)
+    # Then the decompositions
+    coeffs <- fit.f10$coef
+    coeffs <- replace(coeffs,is.na(coeffs),0)
+    plotGenFuns(x, xmat, coeffs)
+    par(savePar)
+    
+    fit.l10 <- lm(y~P.l10-1) #don't want (or need) the constant polynomial
+    xmat <- model.matrix(fit.l10)
+    savePar <- par(mfrow=c(2,2))
+    # Plot the data first
+    plot(x, y, main = "Facebook",
+     xlab = "log(Impressions)",
+     ylab = "log(like+1)",
+     pch=19,
+     col=adjustcolor("firebrick", 0.7)
+    )
+    lines(x[xOrder], predict(fit.l10)[xOrder], col="darkgrey", lwd=2)
+    # Then the decompositions
+    coeffs <- fit.l10$coef
+    coeffs <- replace(coeffs,is.na(coeffs),0)
+    plotGenFuns(x, xmat, coeffs)
+    par(savePar)
+    
+    fit.P <- lm(y~P-1)
+    xmat <- model.matrix(fit.P)
+    savePar <- par(mfrow=c(2,2))
+    # Plot the data first
+    plot(x, y, main = "Facebook",
+     xlab = "log(Impressions)",
+     ylab = "log(like+1)",
+     pch=19,
+     col=adjustcolor("firebrick", 0.7)
+    )
+    lines(x[xOrder], predict(fit.P)[xOrder], col="darkgrey", lwd=2)
+    # Then the decompositions
+    coeffs <- fit.P$coef
+    coeffs <- replace(coeffs,is.na(coeffs),0)
+    plotGenFuns(x, xmat, coeffs)
+    par(savePar)
+    # abline(x[xOrder],(P%*%y)[xOrder]) # should be the same
+```
+
+
+The fitted lines are indistinguishable. However, most parameters are 0 (although in the summaries, they are listed as NA) because of their redundancy. The generators seem to be polynomials of degree at most 3, but all very close to 0 (most entries of $\bf P$ are around $10^{-3}$), and so their coefficients in the models are huge ($10^4$). Note that the first 10 columns of $\bf P$ and all columns of $\bf P$ result in the same generators being used. 
+
+
+
+
+\noindent iv. There are so many generators, because $\bf P$ is an $n \times n$ matrix. However, only 4 are needed, and only the first 4 are used for all fits.
+
+The columns of $\bf P$ are spanned by a 4 dimensional space. 
+
+
+
+
+
+
+
+\noindent d.
+
+\noindent i.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, fig.align="center", fig.width=12, fig.height=10}
+    #c <- t(U)%*%y
+    fit.d <- lm(y~U-1) #don't want the constant one
+    xmat <- model.matrix(fit.d)
+    savePar <- par(mfrow=c(2,2))
+    # Plot the data first
+    xOrder <- order(x)
+    plot(x, y, main = "Facebook",
+     xlab = "log(Impressions)",
+     ylab = "log(like+1)",
+     pch=19,
+     col=adjustcolor("firebrick", 0.7)
+    )
+    lines(x[xOrder], predict(fit.d)[xOrder], col="darkgrey", lwd=2)
+    # Then the decompositions
+    coeffs <- fit.d$coef
+    coeffs <- replace(coeffs,is.na(coeffs),0)
+    plotGenFuns(x, xmat, coeffs)
+    par(savePar)
+    ```
+
+
+
+
+\noindent ii. There are only 4 generators, because $\bf U$ has only 4 columns, and again they look like they could be polynomials of degree at most 3. 
+
+
+
+\noindent iii. The fitted curve is again the same as the others. (Interestingly, the standard errors are the same for each coefficient.) 
+
+
+
+\noindent e. With `fit2`, since $\bf X$'s columns are orthogonal and all but the first are normalized, for the SVD $\bf X = \bf U \bf{D}_\gamma \tr{\bf V}$, $\bf U$ can be taken to be $\bf X$ with the first column normalized; $\bf{D}_\gamma$, the identity matrix $\bf{I}_p$ but with the first entry replaced by the norm of the first column of $\bf X$; and $\bf V = \bf {I}_p$. If this is the SVD that R would actually compute, then we'd expect the plots from d. to be the same as those from 1.b., except for the constant polynomial rescaled, since the generators for `fit2` and the fit with $\bf U$ would be the same, except for the constant polynomial. 
+
+Note that the $j$-th column of $\bf P$ (i.e. the generators for c. would be $\bf U \mathbf x'_j$, where $\mathbf x'_j$ is just $\mathbf x_j$ with its first entry rescaled, but I don't expect this to allow one to predict what these plots will look like, and I'd make exactly the same statements about the plots that I did for `fit1`.
+
+
+
+
+
+
+
+
+\noindent 2. 
+
+\noindent a. $\bf{P} = \bf{X}(\tr{\bf{X}}\bf{X})^{-1} \tr{\bf{X}}$, and $\bf{x_i} = [ \bf{x}_1, \dots, \bf{x}_n] \bf{e}_i = \tr{\bf{X}} \bf{e}_i$, so 
+
+\[ h_{jk} = \tr{\bf{x}_j}(\bf{X}\tr{\bf{X}})^{-1}\tr{\bf{x}_k} = \tr{\bf{e}_j} \bf{X} (\bf{X}\tr{\bf{X}})^{-1} \tr{\bf{X}} \bf{e}_k = \tr{\bf{e}_j} \bf{P} \bf{e}_k \]
+
+\noindent b. Let $\bf{D} = diag(d_1, \dots, d_n)$ be any diagonal matrix (I will use $\bf{D} = \bf{W}$ and $\bf{D} = \bf{I}$). 
+
+\begin{equation}\label{XD}
+[\tr{\bf{X}} \bf{D}]_{kj} = \sum_{l=1}^n [\tr{\bf{X}}]_{kl} \bf{D}_{lj} = [\tr{\bf{X}}]_{kj} d_j = d_j \bf{X}_{jk} = d_j (\bf{x}_j)_k]
+\end{equation}
+
+\noindent i. Using the above equation (\ref{XD}),
+
+\[ [\tr{\bf{X}} \bf{D} \bf{X}]_{kj} = \sum_{l=1}^n [\tr{\bf{X}} \bf{D} ]_{kl} \bf{X}_{lj} = \sum_{l=1}^n d_l \bf{X}_{lk} \bf{X}_{lj} = \sum_{l=1}^n d_l (\bf{x}_l)_k (\bf{x}_l)_j \]
+
+and using this for both $\bf{D} = \bf{W}$ and $\bf{D} = \bf{I}$,
+
+\begin{align*} 
+[\tr{\bf{X}} \bf{W} \bf{X}]_{kj} &= \sum_{l=1}^n w_l (\bf{x}_l)_k (\bf{x}_l)_j = \sum_{l=1}^n (\bf{x}_l)_k (\bf{x}_l)_j - \sum_{l=1}^n (1-w_l) (\bf{x}_l)_k (\bf{x}_l)_j = \sum_{l=1}^n (\bf{x}_l)_k (\bf{x}_l)_j - (\bf{x}_i)_k (\bf{x}_i)_j \\
+&= [\tr{\bf{X}} \bf{X}]_{kj} - [\bf{x}_i \tr{\bf{x}}_i]_{kj} = [\tr{\bf{X}} \bf{X} - \bf{x}_i \tr{\bf{x}}_i]_{kj},
+\end{align*}
+
+and hence $\tr{\bf{X}} \bf{W} \bf{X} = \tr{\bf{X}} \bf{X} - \bf{x}_i \tr{\bf{x}}_i$.
+
+\noindent ii. As in i., using equation (\ref{XD}),
+
+\[ [\tr{\bf{X}} \bf{D} \bf{y}]_k = \sum_{l=1}^n [\tr{\bf{X}} \bf{D} ]_{kl} y_l = \sum_{l=1}^n d_l \bf{X}_{lk} y_l = \sum_{l=1}^n d_l (\bf{x}_l)_k y_l \]
+
+and using this for both $\bf{D} = \bf{W}$ and $\bf{D} = \bf{I}$,
+
+\[ [\tr{\bf{X}} \bf{W} \bf{y}]_k = \sum_{l=1}^n w_l (\bf{x}_l)_k y_l = \sum_{l=1}^n (\bf{x}_l)_k y_l - \sum_{l=1}^n (1-w_l) (\bf{x}_l)_k y_l = \sum_{l=1}^n (\bf{x}_l)_k y_l - (\bf{x}_i)_k y_i = [\tr{\bf{X}} \bf{y}]_k - [\bf{x}_i y_i]_k = [\tr{\bf{X}} \bf{y} - \bf{x}_i y_i]_k, \]
+
+and hence $\tr{\bf{X}} \bf{W} \bf{y} = \tr{\bf{X}} \bf{y} - \bf{x}_i y_i$.
+
+
+
+
+\noindent c. 
+
+\[ \hat{\mu}_{-i}(\bf{x}_i) = \tr{\bf{x}_i} \hat{\bf{\beta}}_{-i} = \tr{\bf{x}_i} (\tr{\bf{X}}\bf{WX})^{-1}\tr{\bf{X}}\bf{W} \bf{y} = \tr{\bf{x}_i} (\tr{\bf{X}} \bf{X} - \bf{x}_i \tr{\bf{x}}_i)^{-1}(\tr{\bf{X}} \bf{y} - \bf{x}_i y_i),\]
+
+where the last equality follows from b.i.. Now, let $\bf{A} = -\tr{\bf{X}} \bf{X}, \bf{v} = \bf{u} = \bf{x}_i$. Note that $h_{ii} = \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1}\tr{\bf{x}_i}$, and since we require $1-h_{ii} \neq 0$ for the expression to be defined, this means 
+
+\[ 1 + \tr{\bf{x}_i} \bf{A}^{-1} \tr{\bf{x}_i} = 1 - \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1}\tr{\bf{x}_i} = 1-h_{ii} \neq 0, \]
+
+as required. Then, applying the formula,
+
+\begin{align*}
+(\tr{\bf{X}} \bf{X} - \bf{x}_i \tr{\bf{x}}_i)^{-1} &= - (-\tr{\bf{X}} \bf{X} + \bf{x}_i \tr{\bf{x}}_i)^{-1} 
+= -\bigg( (-\bf{X}\tr{\bf{X}})^{-1} - \dfrac{(-\bf{X}\tr{\bf{X}})^{-1} \bf{x}_i \tr{\bf{x}}_i (-\bf{X}\tr{\bf{X}})^{-1}}{1 - \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1}\tr{\bf{x}_i}} \bigg) \\
+& = (\bf{X}\tr{\bf{X}})^{-1} + \dfrac{(\bf{X}\tr{\bf{X}})^{-1} \bf{x}_i \tr{\bf{x}}_i (\bf{X}\tr{\bf{X}})^{-1}}{1-h_{ii}}, 
+\end{align*}
+
+so 
+
+
+
+\begin{align*} 
+\hat{\mu}_{-i}(\bf{x}_i) & = \tr{\bf{x}_i} (\tr{\bf{X}} \bf{X} - \bf{x}_i \tr{\bf{x}}_i)^{-1} (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) = \tr{\bf{x}_i} \bigg((\bf{X}\tr{\bf{X}})^{-1} + \dfrac{(\bf{X}\tr{\bf{X}})^{-1} \bf{x}_i \tr{\bf{x}}_i (\bf{X}\tr{\bf{X}})^{-1}}{1-h_{ii}} \bigg) (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) \\
+& = \tr{\bf{x}_i} \bigg((\bf{X}\tr{\bf{X}})^{-1} + \dfrac{(\bf{X}\tr{\bf{X}})^{-1} \bf{x}_i \tr{\bf{x}}_i (\bf{X}\tr{\bf{X}})^{-1}}{1-h_{ii}} \bigg) (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) \\
+& = \bf{x}_i (\bf{X}\tr{\bf{X}})^{-1} (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) + \dfrac{\tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1}\tr{\bf{x}_i}}{1-h_{ii}} \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1} (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) \\
+& = \bf{x}_i (\bf{X}\tr{\bf{X}})^{-1} (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) + \dfrac{h_{ii}}{1-h_{ii}} \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1} (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) \\
+& = \dfrac{1}{1-h_{ii}} \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1} (\tr{\bf{X}} \bf{y} - \bf{x}_i y_i) \\
+& = \dfrac{1}{1-h_{ii}} (\tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1} \tr{\bf{X}} \bf{y} - \tr{\bf{x}_i}(\bf{X}\tr{\bf{X}})^{-1} \bf{x}_i y_i) \\
+& = \dfrac{1}{1-h_{ii}} (\hat{\mu}(\bf{x}_i) - h_{ii} y_i)
+\end{align*}
+
+That was horrible to write in R Markdown. :(
+
+\noindent d.
+
+\noindent i. 
+\[ y_i - \hat{\mu}_{-i}(\bf{x}_i) = y_i - \dfrac{1}{1-h_{ii}} (\hat{\mu}(\bf{x}_i) - h_{ii} y_i) = y_i + \dfrac{h_{ii}}{1-h_{ii}} y_i - \dfrac{1}{1-h_{ii}} \hat{\mu}(\bf{x}_i) = \dfrac{1}{1-h_{ii}} y_i - \dfrac{1}{1-h_{ii}} \hat{\mu}(\bf{x}_i) = \dfrac{1}{1-h_{ii}} (y_i -\hat{\mu}(\bf{x}_i)) \]
+
+
+\begin{itemize}
+\item $y_i -\hat{\mu}(\bf{x}_i)$ is the residual for the $i$-th observation for regular least squares regression using all of the data, while $y_i - \hat{\mu}_{-i}(\bf{x}_i)$ is the residual for the $i-$th observation if the $i$-th observation is omitted completely from the model (given weight 0). $y_i - \hat{\mu}_{-i}(\bf{x}_i)$ is the residual for the prediction of $y_i$ with the model in which $x_i$ is omitted, e.g. not yet observed. 
+
+(The $\bf{W}\bf{X}$ and $\bf{W}\bf{y}$ are $\bf{X}$ and $\bf{y}$ but with $\bf{x}_i$ set to $\bf{0}$ and $y_i$ set to 0, and we have $\bf{0} \bf{\beta} = 0$, so any model correctly predicts the modified $y_i$ from the modified $\bf{x}_i$).
+
+\item From ii. below, 
+
+\[y_i - \hat{\mu}_{-i}(\bf{x}_i) - (y_i -\hat{\mu}(\bf{x}_i)) = \hat{\mu}(\bf{x}_i) - \hat{\mu}_{-i}(\bf{x}_i) = \dfrac{h_{ii}}{1-h_{ii}} (y_i - \hat{\mu}(\bf{x}_i), \]
+
+
+so the difference between the residuals will be greater the worst the original model fits $(\tr{\bf{x}_i}, y_i)$ (i.e. the greater the original residual in absolute value), e.g. $(\tr{\bf{x}_i}, y_i)$ is an outlier. The difference will also be greater the closer $h_{ii}$ is to 1, since the function $\dfrac{h_{ii}}{1-h_{ii}}$ has a vertical asymptote at $h_{ii} = 1$.
+
+\item Again using the formula above and from ii., the difference in the estimated residuals will be least the better the original model fits $(\tr{\bf{x}_i}, y_i)$ (i.e. the closer the original residual is to 0), and, in particular, if one residual is 0, so that the model perfectly fits the point, the other must be 0, too. Furthermore, the difference will be smaller the closer $h_{ii}$ is to 0 (but $h_{ii} \neq 0$ since $\bf{X}$ has full column rank, so $\tr{\bf{X}}\bf{X}$ is strictly positive definite, and so invertible), since the function $\dfrac{h_{ii}}{1-h_{ii}}$ has a vertical asymptote at $h_{ii} = 1$. 
+
+\end{itemize}
+
+\noindent ii. 
+
+\begin{align*} 
+\hat{\mu}(\bf{x}_i) - \hat{\mu}_{-i}(\bf{x}_i) &=  \hat{\mu}(\bf{x}_i) - \dfrac{1}{1-h_{ii}} (\hat{\mu}(\bf{x}_i) - h_{ii} y_i) = \hat{\mu}(\bf{x}_i) - \dfrac{1}{1-h_{ii}} \hat{\mu}(\bf{x}_i) + \dfrac{h_{ii}}{1-h_{ii}} y_i = \dfrac{-h_{ii}}{1-h_{ii}} \hat{\mu}(\bf{x}_i) + \dfrac{h_{ii}}{1-h_{ii}} y_i \\ & = \dfrac{h_{ii}}{1-h_{ii}} (y_i - \hat{\mu}(\bf{x}_i))
+\end{align*}
+
+Since this is just the difference in the residuals, the answers to the last two points are the same as the answers to the last two points in i.. 
+
+For the first point, the change is the difference in the predicted values of $y_i$ between the model in which all observations are included and the model in which $(\tr{\bf{x}_i}, y_i)$ is omitted. 
+
+\bigskip
+
+\noindent 3.
+
+\noindent a.
+\begin{align*}
+l(\mu ; y) = \log({f_m(y ; \mu, 1)}) &= \log\bigg({\frac{1}{\sqrt{m}} \times \frac{\Gamma \left( \frac{m+1}{2}\right)}{\Gamma \left( \frac{1}{2}\right)\Gamma \left( \frac{m}{2}\right)} \times \left(~1 + \frac{1}{m}~(y - \mu)^2 ~\right)^{-\frac{m+1}{2}}}\bigg) \\
+&= \log \bigg({\sqrt{m}} \times \ \frac{\Gamma \left( \frac{m+1}{2}\right)}{\Gamma \left( \frac{1}{2}\right)\Gamma \left( \frac{m}{2}\right)}\bigg) -\frac{m+1}{2} \log \left(~1 + \frac{1}{m}~~(y - \mu)^2 ~\right) \\
+&= -\frac{m+1}{2} \log \left(~1 + \frac{1}{m}~~(y - \mu)^2 ~\right) + C,
+\end{align*}
+
+where $C = \log \bigg({\sqrt{m}} \times \ \frac{\Gamma \left( \frac{m+1}{2}\right)}{\Gamma \left( \frac{1}{2}\right)\Gamma \left( \frac{m}{2}\right)}\bigg)$ does not depend on $\mu$. 
+
+Further omitting $C$ and scaling by a positive constant, we get 
+
+\[-\log \left(~1 + \frac{1}{m}~~(y - \mu)^2 ~\right)\]
+
+\noindent b. We take $\rho(r)$ to be equal to the \emph{negative} log-likelihood for residual $r$, up to a constant, and, in particular, I'll take
+
+\[ \rho(r) = \log (1 + \tfrac{1}{m}r^2)\]
+
+Then, \[ \psi(r) = \rho'(r) = \frac{2r}{m(1 + \tfrac{1}{m}r^2)} = \frac{2r}{m + r^2} \]
+
+\noindent c.
+
+```{r, echo=FALSE}
+r = seq(-45., 45., length.out = 1000)
+plot(c(-45.,45.),c(-0.6,0.6), type="n", ylab="y", xlab="r", main=expression(psi))
+#m = 3
+lines(r,2.*r/(3.+r^2), col="red")
+#m = 10
+lines(r,2.*r/(10.+r^2), col="blue")
+#m = 30
+lines(r,2.*r/(30.+r^2), col="grey")
+legend(25,0.6, c("m=3", "m=10", "m=30"), lty=c(1,1,1), lwd=c(2.5,2.5,2.5), col=c("red","blue","grey"))
+```
+
+\noindent d. As $m$ increases (or for small $r$ or more generally as $r^2/m$ tends to 0), $\psi$ behaves more and more like $r$ (or $r/m$), and $\rho(r)$ behaves more and more like $r^2$ (or $r^2/m$). 
+
+This is justified by the following limits of quotients. 
+
+\[ \lim_{m \to \infty} \tfrac{\psi_m(r)}{r/m} = \lim_{m \to \infty} \frac{\frac{2r}{m + r^2}}{r/m} = \lim_{m \to \infty} \frac{2}{1 + r^2/m} = 2 \]
+
+\[ \lim_{m \to \infty} \tfrac{\rho_m(r)}{r^2/m} = \lim_{m \to \infty} \frac{\log (1 + \tfrac{1}{m}r^2)}{r^2/m} = \lim_{h \to 0^+} \frac{\log (1 + h) - \log(1)}{h} = {\dfrac{d}{dx} \log x}_{|x=1} = {\dfrac{1}{1+x}}_{|x=1} = \dfrac{1}{2} \]
+
+On the other hand, as $|r|$ increases and $m$ remains constant (or bounded), $\psi_m(r)$ tends to 0 as $1/|r|$ and $\rho_m(r)$ goes off to infinity as $\log(|r|)$. 
+
+Together, the estimator resulting from this $\psi$ is more robust in the presence of outliers for small $m$ compared to the least-squares estimator, but acts like the least-squares estimator for large $m$ or small $r$. 
+
+
+# References

@@ -1,0 +1,1032 @@
+---
+title: "CM 764 - Assignment 5"
+author: "Michael St. Jules"
+date: "March 20, 2017"
+output: pdf_document
+header-includes:
+- \usepackage{amsmath, amsthm}
+- \usepackage{graphicx}
+- \usepackage{color}
+- \usepackage{hyperref}
+- \usepackage{epic}
+- \PassOptionsToPackage{pdfmark}{hyperref}\RequirePackage{hyperref}
+- \newcommand{\ve}[1]{\mathbf{#1}}
+- \newcommand{\m}[1]{\mathbf{#1}}
+- \newcommand{\pop}[1]{\mathcal{#1}}
+- \newcommand{\samp}[1]{\mathcal{#1}}
+- \newcommand{\subspace}[1]{\mathcal{#1}}
+- \newcommand{\sv}[1]{\boldsymbol{#1}}
+- \newcommand{\sm}[1]{\boldsymbol{#1}}
+- \newcommand{\tr}[1]{{#1}^{\mkern-1.5mu\mathsf{T}}}
+- \newcommand{\norm}[1]{||{#1}||}
+- \newcommand{\field}[1]{\mathbb{#1}}
+- \newcommand{\Reals}{\field{R}}
+- \newcommand{\Integers}{\field{Z}}
+- \newcommand{\Naturals}{\field{N}}
+- \newcommand{\Complex}{\field{C}}
+- \newcommand{\Rationals}{\field{Q}}
+- \newcommand{\widebar}[1]{\overline{#1}}
+- \newcommand{\given}{~\vline~}
+- \newcommand{\wig}[1]{\tilde{#1}}
+- \newcommand{\bigwig}[1]{\widetilde{#1}}
+- \newcommand{\follows}{\sim}
+- \newcommand{\st}{~|~}
+- \newcommand{\indep}{\bot\hspace{-.6em}\bot}
+- \newcommand{\notindep}{\bot\hspace{-.6em}\bot\hspace{-0.75em}/\hspace{.4em}}
+- \newcommand{\depend}{\Join}
+- \newcommand{\notdepend}{\Join\hspace{-0.9 em}/\hspace{.4em}}
+- \newcommand{\imply}{\Longrightarrow}
+- \newcommand{\notimply}{\Longrightarrow \hspace{-1.5em}/ \hspace{0.8em}}
+- \newtheorem{lemma}{Lemma}
+---
+
+
+
+
+```{r, echo=FALSE}
+#To make `r ... ` work
+local({
+  hook_inline = knitr::knit_hooks$get('inline')
+  knitr::knit_hooks$set(inline = function(x) {
+    res = hook_inline(x)
+    if (is.numeric(x)) sprintf('$%s$', res) else res
+  })
+})
+```
+
+
+\noindent \textbf{1.} I prove the following first, and use it for both a. and b.:
+
+\begin{lemma} Let $W, Z$ be random variables. If $\mathbb{E}[WZ] = \mathbb{W}{Z}$ (i.e. $W$ and $Z$ are uncorrelated, or as a sufficient condition, independent), then 
+
+\[ \mathbb{E}[(W-Z)^2] = \mathbb{E}[(W-\mathbb{E}[W])^2] + \mathbb{E}[(\mathbb{E}[W]-Z)^2] . \]
+\end{lemma}
+
+In fact, $W$ and $Z$ uncorrelated is a necessary condition, too, as the following proof can be reversed.
+
+\begin{proof}
+\begin{align*}
+\mathbb{E}[(W-Z)^2] &= \mathbb{E}[(W-\mathbb{E}[W] + \mathbb{E}[W] - Z)^2] \\
+ &= \mathbb{E}[(W-\mathbb{E}[W])^2 + (W-\mathbb{E}[W])(\mathbb{E}[W] - Z)+ \mathbb{E}[W] - Z)^2] \\
+ &= \mathbb{E}[(W-\mathbb{E}[W])^2] + 2\mathbb{E}[(W-\mathbb{E}[W])(\mathbb{E}[W] - Z)] +  \mathbb{E}[\mathbb{E}[W] - Z)^2]
+\end{align*}
+
+where the last line follows by the linearity of the expected value. So it suffices to check that \[ \mathbb{E}[(W-\mathbb{E}[W])(\mathbb{E}[W] - Z)] = 0 \]
+
+\begin{align*}
+\mathbb{E}[(W-\mathbb{E}[W])(\mathbb{E}[W] - Z)] &= \mathbb{E}[W \mathbb{E}[W] - WZ - \mathbb{E}[W]^2 +\mathbb{E}[W]Z] \\
+&= \mathbb{E}[W \mathbb{E}[W]] - \mathbb{E}[WZ] - \mathbb{E}[\mathbb{E}[W]^2] + \mathbb{E}[\mathbb{E}[W]Z] \\
+&= \mathbb{E}[W]^2 - \mathbb{E}[WZ] - \mathbb{E}[W]^2 + \mathbb{E}[W] \mathbb{E}[Z] \text{ \ \ \ \ by pulling out constants} \\
+&= \mathbb{E}[W]^2 - \mathbb{E}[W]\mathbb{E}[Z] - \mathbb{E}[W]^2 + \mathbb{E}[W]\mathbb{E}[Z] \text{ \ \ \ \ by hypothesis ($W$ and $Z$ are uncorrelated)} \\
+&= 0
+\end{align*} 
+\end{proof}
+
+
+
+\noindent \textbf{a.} Prove that
+    \[
+    \begin{array}{rcl}
+      \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}\sum_{i \in \pop{P}}
+           (y_i - \widehat{\mu}_{\samp{S}_j}({\bf x_i}))^2
+      &=&  
+      \frac{1}{N_\samp{S}} 
+        \sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}
+          \sum_{i \in \pop{P}}
+          (y_i - {\mu}({\bf x_i}))^2
+          \\
+      &&\\
+      && ~~~~~~~+ 
+      \frac{1}{N_\samp{S}} 
+        \sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}
+          \sum_{i \in \pop{P}}
+          (\widehat{\mu}_{\samp{S}_j}({\bf x_i}) - {\mu}({\bf x_i}))^2
+          \\
+    \end{array}
+    \]
+
+\begin{proof} Consider the joint empirical distribution over the $\bf x_i, y_i$ and $\widehat{\mu}_{\mathcal{S}_j}(\bf x_i)$, and denote the random variables ${\bf X}, Y$ and $\widehat{\mu}_{\mathcal{S}}({\bf X})$, respectively. That is, 
+\[ P \big( ({\bf X}, Y, \widehat{\mu}_{\mathcal{S}}({\bf X})) = ({\bf x}, y, z) \big) = \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}\sum_{i \in \pop{P}} \mathbb{I}\big( ({\bf x_i}, y_i, \widehat{\mu}_{\mathcal{S}_j}({\bf x_i})) = ({\bf x}, y, z) \big), \]
+where $\mathbb{I}(A=B) = 1$ if $A=B$ and 0, otherwise (the indicator function). 
+
+Then, the equation (and what we want to prove) becomes
+
+\[ \mathbb{E}[(Y - \widehat{\mu}_{\samp{S}}({\bf X}))^2] = 
+\mathbb{E}[(Y - {\mu}({\bf X}))^2] +
+\mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf X}) - {\mu}({\bf X}))^2] \]
+
+Equivalently, conditioning on $\bf X = x$, with $P({\bf X = x}) = \frac{1}{N} \sum_{i \in \pop{P}} \mathbb{I}({\bf x}_i = {\bf x})$,
+
+\[ \sum_{\bf x} \mathbb{E}[(Y - \widehat{\mu}_{\samp{S}}({\bf X}))^2 | {\bf X = x}] P({\bf X = x}) = 
+\sum_{\bf x} \Big( \mathbb{E}[(Y - {\mu}({\bf X}))^2 | {\bf X = x}] +
+\mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf X}) - {\mu}({\bf X}))^2 | {\bf X = x}] \Big) P({\bf X = x}) \ , \]
+
+and it's sufficient to show for each $\bf x$,
+
+\[\mathbb{E}[(Y - \widehat{\mu}_{\samp{S}}({\bf X}))^2 | {\bf X = x}]  = 
+\mathbb{E}[(Y - {\mu}({\bf X}))^2 | {\bf X = x}] +
+\mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf X}) - {\mu}({\bf X}))^2 | {\bf X = x}] \]
+
+Let $W = Y | {\bf X = x}$ and $Z = \widehat{\mu}_{\samp{S}}({\bf X}) | {\bf X = x}$, with ${\mu}({\bf x}) = \mathbb{E}[Y| {\bf X = x}]$ (by definition of $\mu$). Then $\widehat{\mu}_{\samp{S}}({\bf X}) | {\bf X = x}$ and $Y | \bf{X = x}$ are independent (i.e. $\widehat{\mu}_{\samp{S}}({\bf X})$ and $Y$ are independent given $\bf{X = x}$, or $\widehat{\mu}_{\samp{S}}({\bf X})  \perp Y \ \ | \ \ \bf{X = x}$), since, setting $N_{\bf x} = \sum_{i \in \pop{P}} \mathbb{I}(\bf{x_i = x})$, and noting that $P({\bf X = x}) = \tfrac{N_{\bf x}}{N}$,
+
+\begin{align*}
+P \big( (Y, \widehat{\mu}_{\mathcal{S}}({\bf X})) = (y, z) \ | \  {\bf X = x} \big) 
+&= P \big( ({\bf X}, Y, \widehat{\mu}_{\mathcal{S}}({\bf X})) = ({\bf x}, y, z) \big) / P \big( {\bf X = x} \big) \\
+&= P \big( ({\bf X}, Y, \widehat{\mu}_{\mathcal{S}}({\bf X})) = ({\bf x}, y, z) \big) / \frac{N_{\bf x}}{N} \\
+&= \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}}~\frac{1}{N_{\bf x}} \sum_{i \in \pop{P}} \mathbb{I}\big( ({\bf x_i}, y_i, \widehat{\mu}_{\mathcal{S}_j}({\bf x_i})) = ({\bf x}, y, z) \big) \\
+&= \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}}~\frac{1}{N_{\bf x}} \sum_{i \in \pop{P}} \mathbb{I}\big( \widehat{\mu}_{\mathcal{S}_j}({\bf x}) = z \big) = ({\bf x}, z) \big) \mathbb{I}\big( ({\bf x_i}, y_i) = ({\bf x}, y) \big) \\
+&= \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}} \mathbb{I}\big( \widehat{\mu}_{\mathcal{S}_j}({\bf x}) = z \big) ~\frac{1}{N_{\bf x}} \sum_{i \in \pop{P}}  \mathbb{I}\big( ({\bf x_i}, y_i) = ({\bf x}, y) \big) \\
+&= P \big(\widehat{\mu}_{\mathcal{S}}({\bf X}) = z \ | \  {\bf X = x} \big) P \big( Y = y \ | \  {\bf X = x} \big),
+\end{align*}
+
+where the last line follows (i.e. the conditional probabilities) by summing 
+\[P \big( (Y, \widehat{\mu}_{\mathcal{S}}({\bf X})) = (y, z) \ | \  {\bf X = x} \big) = \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}} \mathbb{I}\big( \widehat{\mu}_{\mathcal{S}_j}({\bf x}) = z \big) ~\frac{1}{N_{\bf x}} \sum_{i \in \pop{P}}  \mathbb{I}\big( ({\bf x_i}, y_i) = ({\bf x}, y) \big) \]
+over $y$ to get \[ P \big(\widehat{\mu}_{\mathcal{S}}({\bf X}) = z \ | \  {\bf X = x} \big) = \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}} \mathbb{I}\big( \widehat{\mu}_{\mathcal{S}_j}({\bf x}) = z \big) \ , \]
+
+and over $z$ to get \[P \big( Y = y \ | \  {\bf X = x} \big) = \frac{1}{N_{\bf x}} \sum_{i \in \pop{P}}  \mathbb{I}\big( ({\bf x_i}, y_i) = ({\bf x}, y) \big) \ . \]  
+
+
+
+So the conditions for the lemma hold, and the equality follows. Line by line, 
+
+
+\begin{align*}
+      \frac{1}{N_{\samp{S}}}\sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}\sum_{i \in \pop{P}}
+           (y_i - \widehat{\mu}_{\samp{S}_j}({\bf x_i}))^2
+      &=  \mathbb{E}[(Y - \widehat{\mu}_{\samp{S}}({\bf X}))^2] \\
+      &= \sum_{\bf x} \mathbb{E}[(Y - \widehat{\mu}_{\samp{S}}({\bf X}))^2 | {\bf X = x}] P({\bf X = x}) \\
+      &= \sum_{\bf x} \Big( \mathbb{E}[(Y - {\mu}({\bf X}))^2 | {\bf X = x}] +
+\mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf X}) - {\mu}({\bf X}))^2 | {\bf X = x}] \Big) P({\bf X = x}) \\
+      & ~~~~~~~~~~~~~~~~~~~~~~~~     \text{ by the lemma} \\
+      &= \mathbb{E}[(Y - {\mu}({\bf X}))^2] +
+\mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf X}) - {\mu}({\bf X}))^2] \\
+      &=
+      \frac{1}{N_\samp{S}} 
+        \sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}
+          \sum_{i \in \pop{P}}
+          (y_i - {\mu}({\bf x_i}))^2 
+      + \frac{1}{N_\samp{S}} 
+        \sum_{j=1}^{N_\samp{S}} 
+         ~\frac{1}{N}
+          \sum_{i \in \pop{P}}
+          (\widehat{\mu}_{\samp{S}_j}({\bf x_i}) - {\mu}({\bf x_i}))^2
+          \\
+\end{align*}
+
+\end{proof}
+
+
+\noindent \textbf{b.} Prove that
+    \[
+    \begin{array}{rcl}
+     \frac{1}{N_\samp{S}} 
+      \sum_{j=1}^{N_\samp{S}} 
+        ~\frac{1}{N}
+        \sum_{i \in \pop{P}}
+          (\widehat{\mu}_{\samp{S}_j}({\bf x_i}) - {\mu}({\bf x_i}))^2
+    &=&  
+    \frac{1}{N_\samp{S}} 
+      \sum_{j=1}^{N_\samp{S}} 
+       ~\frac{1}{N}
+         \sum_{i \in \pop{P}}
+         (\widehat{\mu}_{\samp{S}_j}({\bf x_i}) 
+          - \widebar{\widehat{\mu}}({\bf x_i}))^2
+      \\
+      &&\\
+      && ~~~~~~~+ 
+      \frac{1}{N_\samp{S}} 
+        \sum_{j=1}^{N_\samp{S}} 
+          ~\frac{1}{N}
+          \sum_{i \in \pop{P}}
+          (\widebar{\widehat{\mu}}({\bf x_i}) 
+           - {\mu}({\bf x_i}))^2
+           \\
+    \end{array}
+    \]
+
+\begin{proof}
+Consider the empirical distribution over the $\widehat{\mu}_{\mathcal{S}_j}(\bf x_i)$ for fixed $i$. Then with $W = \widehat{\mu}_{\mathcal{S}_j}({\bf x_i}), Z = {\mu}({\bf x_i})$ and so $\mathbb{E}[W] = \widebar{\widehat{\mu}}({\bf x_i})$, since $Z$ is constant ($i$ is fixed) and therefore $W$ and $Z$ are independent, the following holds
+
+\begin{align*}
+\frac{1}{N_\samp{S}} 
+      \sum_{j=1}^{N_\samp{S}}
+          (\widehat{\mu}_{\samp{S}_j}({\bf x_i}) - {\mu}({\bf x_i}))^2     &= \mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf x_i}) - {\mu}({\bf x_i}))^2] \\
+    &= \mathbb{E}[(\widehat{\mu}_{\samp{S}}({\bf x_i}) 
+          - \widebar{\widehat{\mu}}({\bf x_i}))^2]
+          + 
+      \mathbb{E}[(\widebar{\widehat{\mu}}({\bf x_i}) 
+           - {\mu}({\bf x_i}))^2] \\
+    &= \frac{1}{N_\samp{S}} 
+      \sum_{j=1}^{N_\samp{S}} 
+         (\widehat{\mu}_{\samp{S}_j}({\bf x_i}) 
+          - \widebar{\widehat{\mu}}({\bf x_i}))^2
+          + 
+      \frac{1}{N_\samp{S}} 
+        \sum_{j=1}^{N_\samp{S}} 
+          (\widebar{\widehat{\mu}}({\bf x_i}) 
+           - {\mu}({\bf x_i}))^2
+\end{align*}
+
+and the result follows by averaging over ${\bf x}_i, i \in \pop{P}$. 
+
+\end{proof}
+
+\noindent \textbf{2. }
+
+    ```{r, message=FALSE, warning=FALSE, echo=FALSE}
+mu <- function(x) {
+  xrange <- range(x)
+  vals <- vector("numeric", length=length(x))
+  breaks <- c(0.3109556, 0.6198651)
+  first <- x <= breaks[1]
+  second <- (x > breaks[1]) & (x <= breaks[2])
+  third  <- x > breaks[2]
+  vals[first]  <- -(1 - x[first])^0.5 -0.1
+  vals[second] <- sin(x[second] * 4 * pi) + x[second]/10
+  vals[third]  <- x[third]^2
+  vals
+}
+```
+
+    
+```{r, eval=TRUE, echo=FALSE}
+    
+# They need to use the following functions from the notes
+ave_mu_mu_sq <- function(predfun1, predfun2, x){
+  mean((predfun1(x) - predfun2(x))^2)
+}
+    
+apse <- function(Ssamples, Tsamples, df){
+  # average over the samples S
+  # 
+  N_S <- length(Ssamples)
+  mean(sapply(1:N_S, 
+              FUN=function(j){
+                S_j <- Ssamples[[j]]
+                # get the muhat function based on 
+                # the sample S_j
+                muhat <- getmuhat(S_j, df=df)
+                # average over (x_i,y_i) in a
+                # single sample T_j the squares
+                # (y - muhat(x))^2
+                T_j <- Tsamples[[j]]
+                ave_y_mu_sq(T_j,muhat)
+              }
+  )
+  )
+}
+    
+var_y <- function(Ssamples, Tsamples, mu){
+  # average over the samples S
+  # 
+  N_S <- length(Ssamples)
+  mean(sapply(1:N_S,
+              FUN=function(j){
+                S_j <- Ssamples[[j]]
+                # average over (x_i,y_i) in a
+                # single sample T_j the squares
+                # (y - muhat(x))^2
+                T_j <- Tsamples[[j]]
+                ave_y_mu_sq(T_j,mu)
+              }
+  )
+  )
+}
+    
+var_mutilde <- function(Ssamples, Tsamples, df){
+  # get the predictor function for every sample S
+  muhats <- lapply(Ssamples, 
+                   FUN=function(sample){
+                     getmuhat(sample, df=df)
+                   }
+  )
+  # get the average of these, mubar
+  mubar <- getmubar(muhats)
+  
+  # average over all samples S
+  N_S <- length(Ssamples)
+  mean(sapply(1:N_S, 
+              FUN=function(j){
+                # get muhat based on sample S_j
+                muhat <- muhats[[j]]
+                S_j <- Ssamples[[j]]
+                # average over (x_i,y_i) in a
+                # single sample T_j the squares
+                # (y - muhat(x))^2
+                T_j <- Tsamples[[j]]
+                ave_mu_mu_sq(muhat, mubar, T_j$x)
+              }
+  )
+  )
+}
+    
+bias2_mutilde <- function(Ssamples, Tsamples, mu, df){
+  # get the predictor function for every sample S
+  muhats <- lapply(Ssamples, 
+                   FUN=function(sample) getmuhat(sample, df=df)
+  )
+  # get the average of these, mubar
+  mubar <- getmubar(muhats)
+  
+  # average over all samples S
+  N_S <- length(Ssamples)
+  mean(sapply(1:N_S, 
+              FUN=function(j){
+                # average over (x_i,y_i) in a
+                # single sample T_j the squares
+                # (y - muhat(x))^2
+                T_j <- Tsamples[[j]]
+                ave_mu_mu_sq(mubar, mu, T_j$x)
+              }
+  )
+  )
+}
+    
+apse_all <- function(Ssamples, Tsamples, df, mu){
+  # average over the samples S
+  # 
+  N_S <- length(Ssamples)
+  muhats <- lapply(Ssamples, 
+                   FUN=function(sample) getmuhat(sample, df=df)
+  )
+  # get the average of these, mubar
+  mubar <- getmubar(muhats)
+  
+  rowMeans(sapply(1:N_S, 
+                  FUN=function(j){
+                    S_j <- Ssamples[[j]]
+                    T_j <- Tsamples[[j]]
+                    muhat <- muhats[[j]]
+                    y <- T_j$y
+                    x <- T_j$x
+                    mu_x <- mu(x)
+                    muhat_x <- muhat(x)
+                    mubar_x <- mubar(x)
+                    
+                    # apse
+                    # average over (x_i,y_i) in a
+                    # single sample T_j the squares
+                    # (y - muhat(x))^2
+                    apse <- (y - muhat_x)
+                    
+                    # bias2:
+                    # average over (x_i,y_i) in a
+                    # single sample T_j the squares
+                    # (y - muhat(x))^2
+                    bias2 <- (mubar_x -mu_x)
+                    
+                    # var_mutilde
+                    # average over (x_i,y_i) in a
+                    # single sample T_j the squares
+                    # (y - muhat(x))^2
+                    var_mutilde <-  (muhat_x - mubar_x)
+                    
+                    # var_y :
+                    # average over (x_i,y_i) in a
+                    # single sample T_j the squares
+                    # (y - muhat(x))^2
+                    var_y <- (y - mu_x)
+                    
+                    # Put them together and square them
+                    squares <- rbind(apse, var_mutilde, bias2, var_y)^2
+                    
+                    # return means
+                    rowMeans(squares)
+                  }
+  ))
+}
+```
+
+
+\noindent \textbf{a.i.}
+
+
+
+```{r}
+# The original data wasn't independent; exactly half came from a
+#uniform distribution and the other half from a normal distribution
+rdistx <- function(n=1){
+  x <- runif(n, 0,1) #either uniform
+  x <- c(x, rnorm(n, 0.5, 0.3)) #or normal
+  x <- sample(x, n, replace=FALSE) #each x value will either come 
+  #from a uniform dist or a normal dist, with 1/2 prob each, 
+  # but they could all come from the uniform, or all from the normal
+}
+
+#Can do this without generating twice as much data as is actually used:
+# just sample each x individually, with prob 1/2 from uniform and prob 1/2 from normal
+
+# Alternatively, get exactly half from uniform and exactly half from normal for even n. 
+#rdistx <- function(n=1){ #get exactly half from uniform and exactly
+#half from normal (when n is even)
+#  x <- runif(ceiling(n/2), 0,1) #half from uniform
+#  x <- c(x, rnorm(n/2, 0.5, 0.3)) #half from normal
+#  x <- sample(x, ceiling(n/2), replace=FALSE)
+#}
+
+rdistresid <- function(n=1){
+  rnorm(n, 0, .2)
+}
+```
+
+
+\noindent \textbf{ii. }
+
+```{r}
+set.seed(314159)
+xs <- rdistx(3) #avoid using x, because it seems to interfere with
+rs <- rdistresid(3)
+paste("x = ", paste(xs, collapse=", "))
+paste("r =", paste(rs, collapse=", "))
+```
+
+
+
+
+
+
+
+\noindent \textbf{b. }
+        
+```{r}
+set.seed(234151)
+getSample <- function(N, mu, rdistx, rdistresid) {
+  # Note that mu, rdistx, and rdistresid must be functions
+  x <- rdistx(N)
+  r <- rdistresid(N)
+  # Here we call the function mu
+  y <- mu(x) + r
+  list(x=x, y=y)
+}
+```
+        
+
+\noindent \textbf{i. }
+
+
+```{r}
+TrainingSets <- lapply(1:100, FUN= function(i) {
+getSample(300, mu, rdistx, rdistresid)})
+```
+
+
+\noindent \textbf{ii. }
+
+```{r}
+TestSets <- lapply(1:100, FUN= function(i) {
+getSample(500, mu, rdistx, rdistresid)})
+```
+
+
+
+\noindent \textbf{iii. }
+        
+```{r}
+getmuhat <- function(sample, df) { #p21, use lm for df=2?
+  fit <- smooth.spline(sample$x,sample$y,df = df)
+  muhat <- function(x){predict(fit, x=x)$y}
+}
+
+getmubar <- function(muhats) {
+  function(x) {
+    Ans <- sapply(muhats, FUN=function(muhat){muhat(x)})
+    apply(Ans, MARGIN=1, FUN=mean)
+  }
+}
+
+
+all <- apse_all(TrainingSets, TestSets, df=11, mu) #apse, bias2, var_mutilde, var_y
+
+#squared_bias_mutilde <- all[2]
+#variance_mutilde <- all[3]
+#residual_variance <- all[4]
+#apse_mutilde <- all[1]
+all
+
+```
+
+
+
+
+
+
+
+\noindent \textbf{iv. }
+
+```{r}
+#This function plots the APSEs, biases, and both variances vs complexity
+#I will reuse this function for later questions
+apse_plots <- function(Ssamples, Tsamples, complexity, mu, histx, histy){
+  apse_vals <- sapply(complexity,
+  FUN = function(df){
+    apse_all(Ssamples, Tsamples, mu=mu, df=df)
+  })
+  var_ys <- apse_vals["var_y",]
+  apsemutildes <- apse_vals["apse",]
+  varmutildes <- apse_vals["var_mutilde",]
+  bias2mutildes <- apse_vals["bias2",]
+  
+  # All together now
+  ylim <- extendrange(apse_vals)
+  plot(complexity, varmutildes,
+  ylab="squared errors", ylim=ylim,
+  main="Bias variance tradeoff",
+  type="n") # "n" suppresses the plot, add values later
+  lines(complexity, var_ys, lwd=1, col="grey75", lty=2)
+  points(complexity, var_ys, pch=3, cex=0.5,
+  col=c("firebrick", "purple",
+  "grey10", "green", "blue",
+  "steelblue"))
+  lines(complexity, apsemutildes, lwd=2, col="firebrick")
+  points(complexity, apsemutildes, pch=19,
+  col=c("firebrick", "purple",
+  "grey10", "green", "blue",
+  "steelblue"))
+  lines(complexity, varmutildes, lwd=2, lty=2, col="steelblue")
+  points(complexity, varmutildes, pch=15,
+  col=c("firebrick", "purple",
+  "grey10", "green", "blue",
+  "steelblue"))
+  lines(complexity, bias2mutildes, lwd=2, lty=3, col="purple")
+  points(complexity, bias2mutildes, pch=17,
+  col=c("firebrick", "purple",
+  "grey10", "green", "blue",
+  "steelblue"))
+  legend(histx, histy, legend=c("APSE", "Variance", "Bias^2", "var_y"),
+  lty=c(1,2,3,2), lwd=2, pch=c(19,15,17,3),
+  col=c("firebrick", "steelblue", "purple", "grey75"))
+}
+
+apse_plots(TrainingSets, TestSets, c(5, 10, 15, 20, 30, 40), mu, 15, 0.1)
+
+```
+
+
+
+\noindent \textbf{v.} Their sum seems to be minimized between 15 and 20 (or at least 10 and 30), with 20 achieving the minimum for the complexities used. Increasing complexity reduces bias but increases variance. That's the trade-off. 
+
+```{r, echo=FALSE, eval=FALSE}
+#Their sum seems to be minimized at around 10 (where the APSE is minimized). The variance increases quite quickly, while the bias is initially decreasing, as functions of the effective degrees of freedom, so there is a trade-off. As the effective degrees of freedom increases, however, the bias eventually starts to increase. 
+
+        
+#\noindent \textbf{vi.} The residual variance (around 0.04) accounts for the vast majority of the APSE where the APSE is minimized. The residual variance is several times larger than the sum of the estimator variance and squared bias, possibly a whole order of magnitude greater. 
+```       
+
+\noindent \textbf{vi.} The residual variance is several times larger than the squared bias and the variance of the estimator at the minimizer of the APSE, so it accounts for most of the APSE, for all plotted complexity values.
+
+```{r, echo=FALSE, eval=FALSE}
+However, the estimator variance surpasses the residual variance as the complexity passes 20, becoming about an order of magnitude larger by 30. 
+```
+
+
+\noindent \textbf{vii.} I would recommend between 15 and 25 for the smoothing spline's effective degrees of freedom, as the APSE seems to be minimized there (around 20).
+
+
+```{r, echo=FALSE, eval=FALSE}
+I would recommend between 6 and 15 for the smoothing spline's effective degrees of freedom.
+```
+
+
+
+\noindent \textbf{c.i.} With specified degrees of freedom, i.e. the `df` argument supplied, `ns` "chooses `df - 1 - intercept` knots at \emph{suitably chosen} quantiles of `x`", where (`intercept` $=0$ or 1, for whether to include the intercept in the matrix). (Emphasis mine). From the code, they are evenly spaced (`seq.int(0, 1, length.out = nIknots + 2L)[-c(1L, nIknots + 2L)]` omits all but 0 and 1). 
+
+
+This might be a sensible default choice because where $x$ values are more dense, we can afford to use more knots without overfitting. In particular, the sample averages of the $y$ values in a fixed size neighbourhood with more data will tend to have smaller variances ($\sigma^2/n$ for iid $y$ values for a single $x$ value) than one with less data. 
+
+
+
+
+
+
+        
+\noindent \textbf{ii.} There may be outliers in the $x$-space, and so it's better to spend the model's degrees of freedom (higher degree polynomials in the interior neighbourhoods and the knots themselves) where data is more dense, since past the boundary knots, a \emph{lower} degree polynomial is fit on the exterior neighbourhoods. 
+
+
+
+
+\noindent \textbf{iii.} 
+```{r}
+library(splines)
+getmuhat <- function(sample, df) {
+  x = sample$x
+  y = sample$y
+  fit <- lm(y~ns(x, df=df))
+  muhat <- function(x){predict(fit, newdata=data.frame(x=x))}
+}
+```
+
+```{r, eval=FALSE, echo=FALSE}
+#test ns fit
+plot(TrainingSets[[1]]$x,TrainingSets[[1]]$y)
+muhat <- getmuhat(TrainingSets[[1]], df=10)
+xs <- seq(-1.5,1.5,0.03)
+lines(xs,muhat(xs))
+```
+
+
+
+```{r, warning=FALSE}
+apse_plots(TrainingSets, TestSets, c(5, 10, 15, 20, 30, 40), mu, 32, 0.078)
+```
+
+\noindent \textbf{v.} Their sum seems to be minimized at around 20 (where the APSE is minimized). The variance is generally increasing (except possibly from 5 to 10), and the bias is decreases very quickly from 5 to 10, but continues to decrease past it. So, there is a trade-off past 10, at least. 
+
+
+```{r, echo=FALSE, eval=FALSE}
+#Again, their sum seems to be minimized at around 10 (where the APSE is minimized). The variance increases quite quickly, while the bias is initially decreasing, as functions of the effective degrees of freedom, so there is a trade-off. As the effective degrees of freedom increases, however, the bias eventually starts to increase. 
+
+#Again, their sum seems to be minimized at around 10 (where the APSE is minimized). The variance starts to increase quite quickly once the complexity is past 20, while the bias is initially but very slowly decreasing, as functions of the effective degrees of freedom. However, since the bias seems to remain pretty constant (even eventually starting to increase, surprisingly), there isn't really much trade-off. 
+```
+  
+
+\noindent \textbf{vi.} The residual variance is several times larger than the squared bias and the variance of the estimator for all of the complexities considered, and so accounts for most of the APSE. 
+
+```{r, echo=FALSE, eval=FALSE}
+#The residual variance is several times larger than the squared bias and the variance of the estimator at the minimizer of the APSE, so it accounts for most of the APSE. However, the estimator variance surpasses the residual variance as the complexity passes 20, becoming about an order of magnitude larger by 30. 
+
+#The residual variance is larger than the squared bias and the variance of the estimator between 5 and 10.
+```
+
+\noindent \textbf{vii.} I would recommend between 10 and 30 for the natural spline's effective degrees of freedom, since the APSE seems to be minimized in that interval.
+
+```{r, echo=FALSE, eval=FALSE}
+#\noindent \textbf{v.} As before, their sum seems to be minimized between 15 and 20 (or at least 10 and 30), with 20 achieving the minimum for the complexities used. Increasing complexity reduces bias but increases variance, but more slowly this time. That's the trade-off. 
+        
+#\noindent \textbf{vi.} Again, the residual variance (which is the same as before, around 0.04) accounts for the vast majority of the APSE where the APSE is minimized. The residual variance is several times larger than the sum of the estimator variance and squared bias, possibly a whole order of magnitude greater.
+
+#\noindent \textbf{vii.} Again, I would recommend between 15 and 20 for the smoothing spline's effective degrees of freedom.
+
+#I would recommend between 6 and 15 for the natural spline's effective degrees of freedom.
+```
+        
+
+
+
+
+
+
+
+\noindent \textbf{d. i.} $\alpha$ controls the size of the neighbourhoods, so that, for $\alpha < 1$, each neighbourhood contains a proportion $\alpha$ of all of the points, with each of those points weighted using the tricubic weighting ($1 - (dist/maxdist)^3)^3$). For $\alpha > 1$, all points are used but $maxdist$ is replaced with $\alpha^(1/p)$. Then, for each point for which we want to make a prediction, weighted least squares (with polynomials) is performed with the weight set to the tricubic weighting, with $dist$ and $maxdist$ measured as the distance between the point of interest to make a prediction on and data points in its neighbourhood. This means each $x$ on which we make a prediction may get its own polynomial. 
+        
+\noindent \textbf{ii.} $(2, 1, 0.75, 0.5, 0.25)$. Higher $\alpha$ means more points used in the neighbourhoods and a \emph{less local} fit, so lower complexity. $\alpha > 1$ makes the weights more uniform, so also a less local fit. 
+        
+\noindent \textbf{iii.}
+
+```{r}
+getmuhat <- function(sample, df) {
+  x = sample$x
+  y = sample$y
+  fit <- loess(y~x, span=df, control=loess.control(surface="direct")) 
+  #span is not df, but it will be used
+  # use control=loess.control(surface="direct")) to predict outside of range
+  muhat <- function(x){predict(fit, newdata=data.frame(x=x))}
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+#test loess fit
+plot(TrainingSets[[1]]$x,TrainingSets[[1]]$y)
+muhat <- getmuhat(TrainingSets[[1]], df=0.25)
+xs <- seq(-1.5,1.5,0.03)
+lines(xs,muhat(xs))
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+apse_all(TrainingSets, TestSets, c(1), mu)
+```
+
+
+
+```{r, warning=FALSE}
+apse_plots(TrainingSets, TestSets, c(2, 1, 0.75, 0.5, 0.25), mu, 1.5, 0.09)
+title(xlab="                                   (span)")
+```
+
+
+\noindent \textbf{v.} The APSE is minimized with `span` < 0.25, and near there, bias is increasing as `span` increases (and as the complexity decreases), but the variance is almost constant (only slightly decreasing), so there isn't really a trade-off. I suspect even smaller values of `span` would have yielded a sharper increase in variance. 
+
+```{r, echo=FALSE, eval=FALSE}
+#The APSE is minimized at around `span` = 0.5, and near there, bias is increasing while variance is decreasing as `span` increases (and as the complexity decreases), so there is a trade-off there. The variance does seem to flatten out eventually (for `span` > 1) while the bias is still increasing, but this is past the optimal value of `span`. 
+```
+
+\noindent \textbf{vi.} I would recommend `span` < 0.25 since the APSE seems to be minimized there. 
+
+```{r, echo=FALSE, eval=FALSE}
+#I would recommend between 0.45 and 0.6 for the loess `span` $\alpha$. 
+```
+
+
+
+
+    
+
+
+
+
+\noindent \textbf{d. i.}
+
+```{r}
+library(tree)
+getmuhat <- function(sample, df) { #here df will actually be lambda
+  #lower lambda (df) means more degrees of freedom
+  x = sample$x
+  y = sample$y
+  bushytree <- tree(y~x, control=tree.control(nobs=length(x),
+mindev = 0,
+minsize= 2,
+mincut = 1
+))
+  best.tree <- prune.tree(bushytree, k=df)
+  muhat <- function(x){predict(best.tree, newdata=data.frame(x=x))}
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, eval=FALSE}
+#test loess fit
+plot(TrainingSets[[1]]$x,TrainingSets[[1]]$y)
+muhat <- getmuhat(TrainingSets[[1]], df=0.1)
+xs <- seq(-1.5,1.5,0.03)
+lines(xs,muhat(xs))
+```
+
+
+
+\noindent \textbf{ii.}
+```{r, warning=FALSE}
+apse_plots(TrainingSets, TestSets, c(5, 1, 0.1, 0.05, 0), mu, 3.9, 0.087)
+title(xlab="                                   (k=lambda)")
+```
+
+
+\noindent \textbf{iii.} The APSE of $\widetilde{\mu}$ seems to reach a minimum for some $\lambda \approx 0.1$. As $\lambda$ increases, and the number of degrees of freedom (or nodes or leaves) decreases, the bias increases and the variance decreases (more slowly), so there is a trade-off. 
+
+
+
+
+
+\noindent \textbf{iv.} The residual variance is roughly equal to the variance of $\widetilde{\mu}$, which decreases pretty slowly (although perhaps `k` = $\lambda$ should be plotted on a logarithmic scale, instead), and as a result, the APSE is higher than for the other models.
+
+
+
+
+
+\noindent \textbf{v.} I would recommend $\lambda \approx 0.1$, since the APSE seems to be minimized there. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\noindent \textbf{3. a. }
+```{r, echo=FALSE}
+library(ISLR)
+data(Hitters)
+# Note that row names of the hitters all begin with a dash "-", so
+# let's tidy this up
+library(stringr)      # string manipulation package in R
+row.names(Hitters) <- str_replace(row.names(Hitters), "-", "")
+```
+
+
+```{r}
+library(tree)
+
+#Check that the tree actually works on categorical variables this way
+#Hitters$League[log(Hitters$Salary) > 5.5] = 'A'
+#Hitters$League[log(Hitters$Salary) <= 5.5] = 'N'
+#Hitters$League = log(Hitters$Salary)
+#tree.fit <- tree(log(Salary) ~ League + NewLeague, data=Hitters)
+#plot(tree.fit, type="uniform")
+#text(tree.fit, cex=0.75)
+
+tree.fit <- tree(log(Salary) ~ Hits + HmRun + Runs + RBI + PutOuts 
++ Walks + Assists + Errors + League + NewLeague, data=Hitters)
+```
+
+
+
+\noindent \textbf{i.} 
+```{r, warning=FALSE}
+plot(tree.fit, type="uniform")
+text(tree.fit, cex=0.75)
+```
+
+
+\noindent \textbf{ii.} The League is very unimportant to Salary since the tree does not split on League at all (so it was always better to split on another variable, at each split).
+
+
+\noindent \textbf{iii.} Players with `Hits` $\geq$ 117.5, `Walks` $\geq$ 66.5, `Errors` < 10.5, `Assists` $\geq$ 14 and `HmRun` $\geq$ 17 have the highest average log(`Salary`) in any leaf node (7.197). This does make sense, since `Hits`, `Walks`, `Assists` and `HmRun` (home runs) are all positive indicators of performance (and measured in 1986 only), and the path follows greater values (on the right of the split) of these, while `Errors` are bad, and the path follows lower values of these. So, the players who make the most (from that path) perform better on average. 
+
+        
+\noindent \textbf{iv.} The players who make the least have `Hits` < 117.5, `RBI` < 43.5, (`PutOuts` < 495.5) `PutOuts` < 83.5, `Runs` $\geq$ 21.5, `RBI` < 26. This makes sense, since except for `Runs`, all of the measures for which we're taking the left path are positive, so we're looking at players with worse performance on positive measures. However, that we take the right path for `Runs` is a bit unusual. The covariates splits up until `Runs` already indicate that the player is much worse than the average in the dataset, but taking `Runs` on the right may indicate that these players are getting a lot of play, anyway, which may reflect poorly on his team. Since Baseball is a team sport and so players can benefit from other good players on their team, this may further predict worse performance. Or, salary may simply be related to the team's performance more directly.
+        
+\noindent \textbf{v.} Pete Rose seems to have been \emph{overpaid} according to this fit. He had `Hits`<117.5, `RBI` < 43.5, `PutOuts` $\geq$ 495.5, which gives him a prediction of `r predict(tree.fit)['Pete Rose']`. His actual log(`Salary`) was `r log(Hitters['Pete Rose','Salary'])`. In actual dollars, this is `r 1000*Hitters['Pete Rose','Salary']` vs the predicted `r 1000*exp(predict(tree.fit)['Pete Rose'])`, so he made about $270,000 more than the tree predicted based on his statistics.
+
+```{r,echo=FALSE,eval=FALSE}
+#Hitters['Pete Rose',]
+log(Hitters['Pete Rose', 'Salary'])
+predict(tree.fit)['Pete Rose']
+```
+
+
+\noindent \textbf{vi.} Jose Canseco seems to have been \emph{underpaid} according to this fit. He had `Hits`$\geq$ 117.5, `Walks` < 66.5, `Errors` $\geq$ 10.5, which gives him a prediction of `r predict(tree.fit)['Pete Rose']`. His actual log(`Salary`) was `r log(Hitters['Jose Canseco','Salary'])`. In actual dollars, this is `r 1000*Hitters['Jose Canseco','Salary']` vs the predicted `r 1000*exp(predict(tree.fit)['Jose Canseco'])`, so he made less than half of what the tree predicted based on his statistics. 
+
+```{r,echo=FALSE,eval=FALSE}
+#Hitters['Jose Canseco',]
+log(Hitters['Jose Canseco', 'Salary'])
+predict(tree.fit)['Jose Canseco']
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\noindent \textbf{vii. }
+```{r}
+set.seed(314159)
+bushy.tree <- tree(log(Salary) ~ Hits + HmRun + Runs + RBI + PutOuts 
++ Walks + Assists + Errors + League + NewLeague, data=Hitters) #use defaults with cv.tree
+#bushy.tree <- tree(log(Salary) ~ Hits + HmRun + Runs + RBI + PutOuts 
+#+ Walks + Assists + Errors + League + NewLeague, data=Hitters,
+#control=tree.control(nobs=nrow(Hitters), mindev = 0, minsize= 2, mincut = 1))
+
+trees.cv <- cv.tree(bushy.tree, K=10) #cv.tree uses default controls
+
+plot(trees.cv, main=expression(lambda))
+
+#plot(trees.cv$size, trees.cv$dev, col="firebrick", pch=19,
+#     main="cv.tree(...) 10-fold", xlab="size", ylab="RSS")
+#lines(trees.cv$size, trees.cv$dev, col="firebrick", lwd=2)
+#plot(trees.cv$k, trees.cv$dev, col="firebrick", pch=19,
+#     main="cv.tree(...) 10-fold", xlab="k = lambda", ylab="RSS")
+#lines(trees.cv$k, trees.cv$dev, col="firebrick", lwd=2)
+```
+
+The tree minimizing the cv error has size around 5 (actually `trees.cv$size[which.min(trees.cv$dev)]`=`r trees.cv$size[which.min(trees.cv$dev)]`) and the corresponding `k` = $\lambda$ value is also around 5 (actually `trees.cv$k[which.min(trees.cv$dev)]`=`r trees.cv$k[which.min(trees.cv$dev)]`), so we should use these.  
+
+
+
+\noindent \textbf{viii.}
+```{r}
+bestk <- trees.cv$k[which.min(trees.cv$dev)]
+if(bestk==-Inf){ #prune.tree doesn't work with k=-Inf
+  bestk = 0 #k=0 should produce the same tree in this case
+}
+tree.cv.best <- prune.tree(bushy.tree, k=bestk)
+#can also do best=trees.sizek[which.min(trees.cv$dev)]
+plot(tree.cv.best, type="uniform")
+text(tree.cv.best, cex=0.75)
+```
+
+
+
+
+
+\noindent \textbf{ix.} The kind of players that were paid the highest according to this fitted model had `Hits` $\geq$ 117.5 and `Walks` $\geq$ 66.5, with an average log(`Salary`) of 6.976. This makes sense, since these players have higher values for positive indicators of performance, `Hits` and `Walks`, as we're taking the right intervals on these splits. 
+
+The kind of players that were paid the least according to this fitted model had `Hits` < 117.5 and `RBI` < 43.5, with an average log(`Salary`) of 5.409. This makese sense, since these players have lower values for positive indicators of performance, `Hits` and `Walks`, as we're taking the left intervals on these splits.
+
+```{r, echo=FALSE, eval=FALSE}
+#The kind of players that are paid the highest according to this fitted model had `Hits` < 117.5, (`RBI` < 43.5) and `RBI` < 5.5, with log(`Salary`) = 7.243. At first, this doesn't make much sense, but to have `RBI` < 5.5 suggests that these players weren't batters at all, i.e. maybe they were mostly pitchers, and pitcher is a distinguished and important position on a team. Or, for some reason, a celebrity player was sitting out most games. 
+
+#The kind of players that are paid the least according to this fitted model had `Hits` < 117.5, (`RBI` < 43.5) and `RBI` $\geq$ 5.5, with log(`Salary`) = 5.374. This makes some sense, since a non-negligible `RBI` suggests the players actually played at bat, so weren't necessarily specialized as pitchers, for example, but still didn't play enough or well enough to earn a higher salary. 
+```
+
+
+\noindent \textbf{b. }
+```{r}
+tree.fit <- tree(log(Salary) ~., data=Hitters)
+```
+
+
+\noindent \textbf{i. }
+```{r, warning=FALSE}
+plot(tree.fit, type="uniform")
+text(tree.fit, cex=0.75)
+```
+
+
+\noindent \textbf{ii.} According to this fit, `RBI` is not an important predictor of log(`Salary`), since the tree never splitted on it (but it does on `CRBI`, which is over the player's career, not just 1986).
+
+
+\noindent \textbf{iii.} According to this fit, the players who made the most money had `CAtBat` $\geq$ 1452, `Hits` $\geq$ 117.5, `CRBI` $\geq$ 273 and `Walks` $\geq$ 60.5 (with an average log(`Salary`) of 7.075). This makese sense since all of these are indicators of good performance, and also the `C` covariates, corresponding to their career statistics, may indicate seniority beyond just performance, or consistently good performance over several years. 
+
+
+\noindent \textbf{iv.} According to this fit, the players who made the least had `CAtBat` < 1452, `CHits` < 182, `AtBat` $\geq$ 147, `CRuns` < 58.5. This makes sense, since taking the lower partition on these splits, except `AtBat`, indicates worse performance or less play in general. `AtBat` is primarily an indicator of how much these players got to play, not necessarily of their performance; letting worse players play may reflect poorly on the whole of the team, further indicating that this player's performance is worse on average, or it may just indicate that these players are rookies, and pay depends on how many seasons a player's been playing for, independently of their actual performance. 
+
+
+\noindent \textbf{v.} Pete Rose seems to have been even more \emph{overpaid} according to this fit. He had `CAtBat` $\geq$ 1452, `Hits` < 117.5, `Walks` $\geq$ 43.5, which gives him a prediction of `r predict(tree.fit)['Pete Rose']`. His actual log(`Salary`) was `r log(Hitters['Pete Rose','Salary'])`. In actual dollars, this is `r 1000*Hitters['Pete Rose','Salary']` vs the predicted `r 1000*exp(predict(tree.fit)['Pete Rose'])`, so he made almost twice as much as predicted. 
+
+```{r,echo=FALSE,eval=FALSE}
+#Hitters['Pete Rose',]
+log(Hitters['Pete Rose', 'Salary'])
+predict(tree.fit)['Pete Rose']
+```
+
+
+\noindent \textbf{vi.} Jose Canseco seems to have been \emph{overpaid} according to this fit (unlike the last onw). He had `CAtBat` < 1452, `CHits` < 182, `AtBat` $\geq$ 147 and `CRuns` $\geq$ 58.5, which gives him a prediction of `r predict(tree.fit)['Pete Rose']`. His actual log(`Salary`) was `r log(Hitters['Jose Canseco','Salary'])`. In actual dollars, this is `r 1000*Hitters['Jose Canseco','Salary']` vs the predicted `r 1000*exp(predict(tree.fit)['Jose Canseco'])`, so he made less than half of what the tree predicted based on his statistics. 
+
+```{r,echo=FALSE,eval=FALSE}
+#Hitters['Jose Canseco',]
+log(Hitters['Jose Canseco', 'Salary'])
+predict(tree.fit)['Jose Canseco']
+```
+
+
+
+
+
+
+
+
+
+
+
+\noindent \textbf{vii.}
+```{r}
+set.seed(314159)
+#bushy.tree <- tree(log(Salary) ~., data=Hitters,
+#control=tree.control(nobs=nrow(Hitters), mindev = 0, minsize= 2, mincut = 1)) 
+bushy.tree <- tree(log(Salary) ~., data=Hitters) #use defaults with cv.tree
+
+trees.cv <- cv.tree(bushy.tree, K= 10) #cv.tree uses default controls
+
+plot(trees.cv, main=expression(lambda))
+
+#plot(trees.cv$size, trees.cv$dev, col="firebrick", pch=19,
+#     main="cv.tree(...) 10-fold", xlab="size", ylab="RSS")
+#lines(trees.cv$size, trees.cv$dev, col="firebrick", lwd=2)
+#plot(trees.cv$k, trees.cv$dev, col="firebrick", pch=19,
+#     main="cv.tree(...) 10-fold", xlab="k = lambda", ylab="RSS")
+#lines(trees.cv$k, trees.cv$dev, col="firebrick", lwd=2)
+```
+
+```{r, eval=FALSE, echo=FALSE}
+best.index = length(trees.cv$dev)-which.min(trees.cv$dev[length(trees.cv$dev):1])+1
+```
+
+
+The trees minimizing the cv error have size `r trees.cv$size[which.min(trees.cv$dev)]` and `k` = $\lambda=$ `r trees.cv$k[which.min(trees.cv$dev)]` (or, equivalently, 0, since the resulting trees are the same; they both split as much as possible, since this always reduces the RSS). So, I suggest these values. 
+
+
+
+\noindent \textbf{viii.}
+```{r}
+bestk <- trees.cv$k[which.min(trees.cv$dev)]
+if(bestk==-Inf){ #prune.tree doesn't work with k=-Inf
+  bestk = 0 #k=0 should produce the same tree in this case
+}
+tree.cv.best <- prune.tree(bushy.tree, k=bestk)
+#can also do best=trees.sizek[which.min(trees.cv$dev)]
+plot(tree.cv.best, type="uniform")
+text(tree.cv.best, cex=0.75)
+```
+
+\noindent \textbf{ix.} The kind of players who are paid the highest according to this fitted model had `CAtBat` $\geq$ 1452, `Hits` $\geq$ 117.5, `CRBI` $\geq$ 273 and `Walks` $\geq$ 60.5, with an average log(`Salary`) of 7.075. This makes sense, since we're taking the right on positive performance indicators. 
+
+The kind of players who are paid the least according to this fitted model had `CAtBat` < 1452, `CHits` < 182, `AtBat` $\geq 147$ and `CRuns` < 58.5, with an average log(`Salary`) of 4.462. This makes some sense, since we're taking the left interval on positive indicators of performance at each step, except for `AtBat`. These players may be rookies, for example. 
+
+
+```{r, eval=FALSE, echo=FALSE}
+#`CAtBat` < 1452, `CHits` < 182 and `Hits` < 15.5 with log(`Salary`) = 7.243, and this seems like the same issue as with 3.a.ix. I suspect it's a single player who is an outlier. The group with the second highest average log(`Salary`) are those with `CAtBat` $\geq$ 1452, `Hits` $\geq$ 117.5 and `CRBI` $\geq$ 273 and `Walks` $\geq$ 60.5, with log(`Salary`) = 7.243. This makes more sense, since we're taking the right splits on positive indicators of performance.
+
+#The kind of players that are paid the least according to this fitted model had `CAtBat` $\geq$ 1452, `Hits` $\geq$ 117.5 and `CRBI` < 273 and `CHits` $\geq$ 821, with log(`Salary`) =           . This doesn't make a lot of sense, since only on one positive indicator of performance are we taking lower values (`CRBI`). The second least paid group for average log(`Salary`) are those who had `CAtBat` < 1452, `CHits` < 182, `Hits` $geq$ 15.5 and `CHits` < 132, with log(`Salary`) =       . This makes more sense, because this includes more lefts along positive indicators of performance (`Chits` being the exception). 
+```
+
+
+
+
+
+
+
+
+
+
+\noindent \textbf{c.} The algorithm would traverse down the tree, according to the splits, until the first time it attempts to split on an `NA` value, at which point it would output the average of the response for all points with covariates also in the same subtree. Since the tree splits greedily, using the average response in the subtree as far down as possible before the algorithm accesses an `NA` for that player should be better, on average, than taking a higher/bigger subtree containing the player.  

@@ -1,0 +1,559 @@
+---
+title: "A3"
+author: "Michael St. Jules"
+date: "February 3, 2017"
+output: pdf_document
+header-includes:
+- \usepackage{graphicx}
+- \usepackage{color}
+- \usepackage{hyperref}
+- \usepackage{epic}
+- \PassOptionsToPackage{pdfmark}{hyperref}\RequirePackage{hyperref}
+- \newcommand{\tr}[1]{{#1}^{\mkern-1.5mu\mathsf{T}}}
+- \renewcommand{\bf}[1]{\mathbf{#1}}
+---
+
+\noindent $\bf{1. a. i.}$ I use the superscript $(N-1)$ for $y_1, \dots y_{N-1}$, and $(N)$ for $y_1, \dots y_{N-1}, y$.
+
+$T_N(y_1, \dots, y_N) = y_{(\lceil \tfrac{3}{4} N \rceil)} - y_{(\lceil \tfrac{1}{4} N \rceil)}$
+
+$SC_N(y) = N \big(T_N(y_1, \dots, y_{N-1}, y) - T_{N-1}(y_1, \dots, y_{N-1})\big)$
+
+For $y_1, \dots y_{N-1}$,
+\[q^{(N-1)}_3 = y^{(N-1)}_{(\lceil \tfrac{3}{4} (N-1) \rceil)} = y^{(N-1)}_{(\lceil 3m - \tfrac{1}{4} \rceil)} = y^{(N-1)}_{(3m)},\]
+
+while for $y_1, \dots y_{N-1}, y$, 
+\[q^{(N)}_3 = y^{(N)}_{(\lceil \tfrac{3}{4} N \rceil)} = y^{(N)}_{(3m)},\]
+
+So, if $y \geq y^{(N-1)}_{(3m)}$, then $q^{(N)}_3 = y^{(N)}_{(3m)} = y^{(N-1)}_{(3m)}$, and otherwise $q^{(N)}_3 = y^{(N)}_{(3m)} = \max\{y,y^{(N-1)}_{(3m-1)}\}$
+
+Similarly, if $y \geq y^{(N-1)}_{(m)}$, then $q^{(N)}_1 = y^{(N)}_{(m)} = y^{(N-1)}_{(m)}$, and otherwise $q^{(N)}_1 = y^{(N)}_{(m)} = \max\{y,y^{(N-1)}_{(m-1)}\}$
+
+Then, with $SC(y) = N\big( (q^{(N)}_3 - q^{(N)}_1) - (q^{(N-1)}_3-q^{(N-1)}_1)\big),$
+
+if $y \geq y^{(N-1)}_{(3m)}$, then $IQR_{N} = IQR_{N-1}$ and $SC_N(y) = 0$
+
+Otherwise if $y < y^{(N-1)}_{(3m)}$, but $y \geq y^{(N-1)}_{(m)}$, then $SC_N(y) = N (\max\{y, y^{N-1}_{(3m-1)}\} - y^{(N-1)}_{(3m)})$
+
+Otherwise, $y < y^{(N-1)}_{(m)}$, and $SC_N(y) = N \big((y^{(N-1)}_{(3m-1)} - \max\{y, y^{(N-1)}_{(m-1)}\}) - (y^{(N-1)}_{(3m)}) - y^{(N-1)}_{(m)}) \big)$
+
+So 
+\[ SC(y) = \begin{cases}
+0 & \text{,  if } y \geq y^{(N-1)}_{(3m)} \\
+N (\max\{y, y^{N-1}_{(3m-1)}\} - y^{(N-1)}_{(3m)}) & \text{,   if } y < y^{(N-1)}_{(3m)} \text{ and } y \geq y^{(N-1)}_{(m)} \\
+N \big((y^{(N-1)}_{(3m-1)} - \max\{y, y^{(N-1)}_{(m-1)}\}) - (y^{(N-1)}_{(3m)}) - y^{(N-1)}_{(m)}) \big) & \text{,   otherwise } (y < y^{(N-1)}_{(m)})
+\end{cases}\]
+
+
+
+\noindent $\bf{ii.}$
+
+
+```{r,echo=FALSE}
+set.seed(123456)
+m <- 10
+y_i <- runif(4*m -1)
+N <- 4*m
+yord <- order(y_i) #ties are very unlikely
+
+
+SC_Q <- function(yy){
+  if(yy>=y_i[yord[3*m]]){
+    return(0)
+  }else if(yy<y_i[yord[m]]){
+    return(N*(y_i[yord[3*m-1]]-max(yy,y_i[yord[m-1]])-(y_i[yord[3*m]]-y_i[yord[m]])))}
+  return(N*(max(yy,y_i[yord[3*m-1]])-y_i[yord[3*m]]))
+}
+
+SC_Q2 <- function(yy){
+  if(yy>=y_i[yord[3*m]]){
+    return(0)
+  }else if(yy>=y_i[yord[m]]){
+    return(N*(max(yy,y_i[yord[3*m-1]])-y_i[yord[3*m]]))
+  }
+  return(N*((y_i[yord[3*m-1]] - max(yy,y_i[yord[m-1]]))-(y_i[yord[3*m]] - y_i[yord[m]])))
+}
+
+#y_ordered <- y_i[yord]
+
+SC_Q3 <-function(yy){
+  y_i2 <- c(y_i,yy)
+  y2ord <- order(y_i2)
+  return(N*((y_i2[y2ord[3*m]]-y_i2[y2ord[m]])-(y_i[yord[3*m]]-y_i[yord[m]])))
+}
+
+#plot.function(SC_Q2, from=-1, to=1), xlab="y", main="SC(y) vs y", ylab="SC(y)")
+y <- seq(from = -1, to = 2, by = 0.01)
+z <- y #copies
+z2 <- y #copies
+for(i in 1:length(y)){
+  z[i] <- SC_Q2(y[i])
+  #z2[i] <- SC_Q3(y[i])
+}
+#plot(y,z2,xlab="y", main="SC(y) vs y", ylab="SC(y)", type="l")
+#lines(y,z)
+plot(y,z,xlab="y", main="SC(y) vs y", ylab="SC(y)", type="l")
+```
+
+
+
+\noindent $\bf{b. i.}$  Note that \[ \sum_{i=1}^{N} (y_i - \bar{y})^2 = \sum_{i=1}^{N} y_i^2 - \tfrac{1}{N} \big(\sum_{i=1}^{N} y_i \big)^2.\]
+
+Then, using this formula,
+
+\begin{align*}
+SC_N(y) &= N \big(T_N(y_1, \dots, y_{N-1}, y)-T_{N-1}(y_1, \dots, y_{N-1})\big) \\
+&= N \Bigg(\sqrt{\tfrac{1}{N-1} \bigg(y^2 + \sum_{i=1}^{N-1} y_i^2 - \tfrac{1}{N} \big(y+ \sum_{i=1}^{N-1} y_i \big)^2 \bigg)} - \sqrt{\tfrac{1}{N-2} \bigg(\sum_{i=1}^{N-1} y_i^2 - \tfrac{1}{N-1} \big(\sum_{i=1}^{N-1} y_i \big)^2 \bigg)} \ \Bigg)
+\end{align*}
+
+
+I can't see any nice way to simplify this expression, so I'll stop with that. 
+
+\noindent $\bf{ii.}$
+
+```{r, echo=FALSE}
+y_sum = sum(y_i)
+y2_sum = sum(y_i^2)
+#y_sum2 = y_sum^2
+
+
+SC_SD<-function(yy){
+  return( N*( ( (yy^2+y2_sum - ((yy+y_sum)^2)/N)/(N-1) )^0.5 - ( (y2_sum - y_sum^2/(N-1))/(N-2) )^0.5 ) )
+}
+
+SC_SD3<-function(yy){
+  y_i2 <-c(y_i, yy)
+  m = y_sum/(N-1)
+  m2 = (y_sum+yy)/N
+  #return(N* (sum((y_i2-m2)^2)/(N-1))^0.5 - (sum((y_i-m)^2)/(N-2))^0.5 ) #rounding errors explode?
+  return( (N/(N-1)^0.5)* (sum((y_i2-m2)^2))^0.5 - (N/(N-1)^0.5)*(sum((y_i-m)^2))^0.5 )
+}
+
+
+
+SC_SD2<-function(yy){
+  y_i2 <- c(y_i,yy)
+  return(N*(sd(y_i2)-sd(y_i)))
+}
+
+#plot.function(SC_SD, from=-0.5, to=1.5, xlab="y", main="SC(y) vs y", ylab="SC(y)")
+
+y <- seq(from = -1, to = 2, by = 0.01)
+z <- y #copies
+z2 <- y #copies
+z3 <- y #copies
+for(i in 1:length(y)){
+  z[i] <- SC_SD(y[i])
+  #z2[i] <- SC_SD2(y[i])
+  #z3[i] <- SC_SD3(y[i])
+}
+plot(y,z,xlab="y", main="SC(y) vs y", ylab="SC(y)",type="l")
+#plot(y,z2,xlab="y", main="SC(y) vs y", ylab="SC(y)",type="l")
+#plot(y,z3,xlab="y", main="SC(y) vs y", ylab="SC(y)",type="l")
+#lines(y,z2)
+```
+
+
+
+\noindent $\bf{c.}$ Since the sensitivity curve for the interquartile range is bounded, the interquartile range is robust against a \emph{single} outlier. On the other hand, the sensitivity curve for the standard deviation is unbounded in $y$, and so the standard deviation is sensitive to a single outlier. 
+
+
+
+
+
+\noindent $\bf{2. a.}$ 
+
+```{r, warning=FALSE, eval=FALSE}
+  set.seed(123456)
+  x <- runif(100)
+  y <- 2 + 10 * x
+  #xy = data.frame(x,y)
+  
+  #p.51-54 in ResponseModels
+  library(MASS)
+  library(loon)
+  p <- l_plot(x,y)
+  
+  xlim <- extendrange(x)
+  ylim <- extendrange(y)
+  newX <- seq(min(xlim), max(xlim), length.out=200)
+  newY <- 2 + 10 * newX
+
+  #plot the line
+  #l-configure?
+  curve.actual <- l_layer_line(p, x=newX, y=newY, color="grey",linewidth=2)
+  #l_scaleto_world(p)
+  
+  fits <- l_layer_group(p, label="Various fitting methods",index="end")
+  
+  fit.ls <- lm(y~x)
+  curve.ls <- l_layer_line(p, x=newX, y=predict(fit.ls, 
+                                                newdata=data.frame(x=newX)), 
+                           color="red",linewidth=2,label="Least squares",
+                           parent=fits, index="end")
+  #formula <- formula(fit.ls)
+  #fit.Huber <- rlm(formula,data=xy,psi="psi.huber", maxit=200)
+  fit.Huber <- rlm(y~x,psi="psi.huber", init="ls", maxit=200)
+  curve.Huber <- l_layer_line(p, x=newX, y=predict(fit.ls, 
+                                                newdata=data.frame(x=newX)), 
+                           color="orange",linewidth=2,label="Huber psi",
+                           parent=fits, index="end")
+  
+  fit.bisquare <- rlm(y~x,psi="psi.bisquare", init="ls", maxit=200)
+  curve.bisquare <- l_layer_line(p, x=newX, y=predict(fit.ls, 
+                                                newdata=data.frame(x=newX)), 
+                           color="green",linewidth=2,label="Tukey's bisquare psi",
+                           parent=fits, index="end")
+
+  fit.lts <- ltsreg(y~x)
+  curve.lts <- l_layer_line(p, x=newX, y=predict(fit.ls, 
+                                                newdata=data.frame(x=newX)), 
+                           color="blue",linewidth=2,label="Least trimmed squares", 
+                           parent=fits, index="end")
+```
+
+
+
+\noindent $\bf{b.}$
+
+```{r, eval=FALSE}
+  updateFits <- function(p, fit){
+    sel <- p['active']
+    xnew <- p['xTemp']
+    if (length(xnew) == 0){
+      xnew <- p['x']
+    }
+    
+    ynew <- p['yTemp']
+    if (length(ynew) == 0){
+      ynew <- p['p']
+    }
+    
+    newdata <- subset(data.frame(x=xnew, y=ynew), sel)
+    xrng <- extendrange(xnew)
+    
+    xvals_curve <- seq(min(xrng), max(xrng), length.out=200)
+    formula <- formula(fit) #they're all y~x
+    fit.ls <- lm(formula, data=newdata)
+    fit.Huber <- rlm(formula,data=newdata,psi="psi.huber", maxit=200)
+    fit.bisquare <- rlm(formula,data=newdata,psi="psi.bisquare", maxit=200)
+    fit.lts <- ltsreg(formula,data=newdata)
+    
+    l_configure(curve.ls, x=xvals_curve, 
+                y=predict(fit.ls, newdata=data.frame(x=xvals_curve)))
+    l_configure(curve.Huber, x=xvals_curve, 
+                y=predict(fit.Huber, newdata=data.frame(x=xvals_curve)))
+    l_configure(curve.bisquare, x=xvals_curve, 
+                y=predict(fit.bisquare, newdata=data.frame(x=xvals_curve)))
+    l_configure(curve.lts, x=xvals_curve, 
+                y=predict(fit.lts, newdata=data.frame(x=xvals_curve)))
+    tcl('update', 'ideltasks')
+  }
+
+
+  l_bind_state(p,c("active","xTemp", "yTemp"), function(){updateFits(p,fit.ls)})
+  
+  #sum(p['glyph'] == "triangle")
+  #sum(p['selected'])
+```
+
+
+
+
+
+\noindent $\bf{c., d. \text{ and } e.}$ (Least squares, Huber and Tukey's bisquare) The exact fit point is $\tfrac{m}{N} = \tfrac{1}{100}$
+
+
+\noindent $\bf{ii.}$ 
+
+\includegraphics{first_three.pdf}
+
+
+
+\noindent $\bf{iii.}$ $m=1$ so $m-1 = 0$ and the result holds trivially, because moving no points will not move the line. :)
+
+\includegraphics{ls2.pdf}
+
+
+
+
+
+
+
+
+```{r, echo=FALSE, eval=FALSE}
+#\noindent $\bf{d. \text{ and } e.}$ (Huber and Tukey's bisquare)
+
+#\noindent $\bf{i.}$ Graphically, it looks like the exact fit point is $\tfrac{m}{N} = \tfrac{2}{100} = \tfrac{1}{50}$. I suspect it should be able to do it with one point since no residual receives 0 weight, but I wasn't able to do it. 
+
+#However, the Huber weight is strictly bounded below by a positive constant in a small enough neighbourhood around 0, which suggests that it should only take one point to move the line; this may not show up because there are too many other points and because as the weight for the single outlier may decrease faster than the residual increases, so it would only be perceptible for very small shifts. 
+
+#Has something to do with convexity/concavity near 0? w(r)*r^2 increases and then maybe decreases again?
+
+\noindent $\bf{ii.}$
+
+\includegraphics{Huber_and_bisquare.pdf}
+
+
+
+\noindent $\bf{iii.}$ $m=2$, so $m-1 = 1$
+
+\includegraphics{Huber_and_bisquare2.pdf}
+```
+
+
+```{r, echo=FALSE}
+#\noindent e. i. Graphically, it looks like the exact fit point is $\tfrac{m}{N} = \tfrac{2}{100} = \tfrac{1}{50}$. 
+
+#However, the same reasoning as with Huber also applies to Tukey's bisquare weight. 
+```
+
+
+
+
+\noindent $\bf{f. i.}$ The exact fit point is $\tfrac{m}{N} = \tfrac{50}{100} = \tfrac{1}{2}$
+
+
+\noindent $\bf{ii.}$  
+
+\includegraphics{lts.pdf}
+
+
+\noindent $\bf{iii.}$ $m=50$, so $m-1 = 49$. From the documentation for lts, only the smallest $\tfrac{n+p+1}{2} = \tfrac{100+1+1}{2} = 51$ residuals are summed, and so 49 residuals can be ignored completely when all the smallest ones are 0. There are 49 moved points in the plot (selected, in magenta). 
+
+
+\includegraphics{lts3.pdf}
+
+
+
+
+
+
+
+
+
+\noindent $\bf{3. a. i.}$
+
+```{r, echo=FALSE, eval=FALSE}
+  #install.packages("ISLR", lib="/my/own/R-packages/")
+  library(ISLR)
+  library(loon)
+  data("Hitters")
+  C_Hitters <- na.omit(Hitters)
+  library(stringr) # string manipulation package in R
+  row.names(C_Hitters) <- str_replace(row.names(C_Hitters), "-", "")
+
+  y = C_Hitters$Salary
+  delta <- 0.1
+  x = C_Hitters$RBI + delta
+  
+  
+  power <- function(x, y, from=-5, to=5, 
+                  xlabel="Transformed x=RBI+delta", ylabel="Transformed y=Salary", 
+                  linkingGroup="power", ...) {
+  
+  tt <- tktoplevel()
+  tktitle(tt) <- "Box-Cox Power Transformation"
+  p <- l_plot(x=x, y=y, xlabel=xlabel, ylabel=ylabel,
+              parent=tt, linkingGroup=linkingGroup, ...)
+  hx <- l_hist(x=x, xlabel=xlabel, yshows='density', 
+               linkingGroup=linkingGroup)
+  hy <- l_hist(x=y, xlabel=ylabel, yshows='density',
+               swapAxes=TRUE, 
+               linkingGroup=linkingGroup)
+    
+    lambda_x <- tclVar('1')
+    lambda_y <- tclVar('1')
+    sx <- tkscale(tt, orient='horizontal',
+                  variable=lambda_x, from=from, to=to, resolution=0.1)
+    sy <- tkscale(tt, orient='vertical',
+                  variable=lambda_y, from=to, to=from, resolution=0.1)
+    
+    tkgrid(sy, row=0, column=0, sticky="ns")
+    tkgrid(p, row=0, column=1, sticky="nswe")
+    tkgrid(sx, row=1, column=1, sticky="we")
+    tkgrid.columnconfigure(tt, 1, weight=1)
+    tkgrid.rowconfigure(tt, 0, weight=1)
+    
+    powerfun <- function(x, lambda) {
+        if (lambda == 0)
+            log(x)
+        else
+            (x^lambda-1)/lambda
+    }
+    
+    update <- function(...) {
+        l_configure(p,
+                    x = powerfun(x, as.numeric(tclvalue(lambda_x))),
+                    y = powerfun(y, as.numeric(tclvalue(lambda_y))))
+        l_scaleto_world(p)
+        l_configure(hx,
+                    x = powerfun(x, as.numeric(tclvalue(lambda_x))))
+        l_scaleto_world(hx)
+        l_configure(hy,
+                    x = powerfun(y, as.numeric(tclvalue(lambda_y))))
+        l_scaleto_world(hy)
+    }
+    
+    tkconfigure(sx, command=update)    
+    tkconfigure(sy, command=update)    
+    
+    invisible(list(plot=p,  histx = hx , histy = hy))
+    # only returns value if it is assigned
+  }
+  
+  ourPlot <- with(C_Hitters,
+                  power(x, y,
+                        itemlabel=paste(row.names(C_Hitters)),
+                        showItemlabels=TRUE,
+                        linkingGroup="Name")
+                  )
+# We've kept the handle of the scatterplot for later reference.
+ourPlot
+
+```
+
+
+
+Based on RBI alone, Mike Schmidt appears to be the most overpaid player, while the second most overpaid is one of Ted Kennedy, Jack Clark, Ozzie Smith and Eddie Murray.
+
+Again based on RBI alone, the two most underpaid players appear to be Jose Canseco and Joe Carter. 
+
+
+\noindent $\bf{ii.}$ $p_x \leq 0.1$ and $p_x \geq 0.9$ look asymmetric (left-skewed and right-skewed, respectively). Note that for $p_x \leq 0.4$, Mike Schmidt pretty clearly becomes an outlier in $x$-space. 
+
+
+
+\noindent $\bf{iii.}$ $p_y \leq -0.4$ and $p_y \geq 0.1$ look too asymmetric.
+
+
+
+\noindent $\bf{b.}$ We might choose these powers precisely because the two groups are most (or roughly most) clearly separable this way and look roughly linear, allowing us to fit a line to each group separately. This suggests there's a covariate that should be included in the model (whether already included in the data or not). In particular, the covariate itself could just be the group membership, but this is somewhat ad hoc. 
+
+
+
+\noindent $\bf{c. i.}$ It's more straightforward to just fit a line to each subset of the data, rather two lines determined by a 4 parameter model, so I recommend this. 
+
+I'd also recommend the use of a robust model for the upper group, or the exclusion of particular outliers. My choice is the second approach, and so I'd exclude Mike Schmidt and Terry Kennedy, the two most obvious outliers, as well as the less extreme outliers Alan Wiggins, Terry Puhl, Jack Clark and Bob Dernier. 
+
+```{r, echo=FALSE, eval=FALSE}
+I could write it all as one model with separate line parameters per group and an $\mathbf X$ matrix with a bunch of 0s: consider the two column matrix of 1s in the first column (intercept) and the transformed $x_i$ in the second column, and consider the submatrix corresponding only to the upper group. This submatrix becomes the top-left block of $\mathbf X$, and the submatrix corresponding to the lower group becomes the bottom-right block of $\mathbf X$; the top-right and bottom-left blocks are all 0s. 
+```
+
+
+
+
+\noindent $\bf{ii.}$ 
+```{r, echo=FALSE, eval=FALSE}
+  #load("/Users/Mike/Desktop/CM 764/A3/data.RData")
+  sp <- ourPlot$plot
+  lwrGroup <- sp['glyph'] == "triangle"
+  uprGroup <- !lwrGroup
+  #C_Hitters[c("Candy Maldonado","Ken Phelps","Harry Spilman"),]
+  #C_Hitters[c("Larry Herndon", "Tony Fernandez", "Larry Parrish"),]
+```
+
+```{r, eval=FALSE}
+  #sp['x'] and sp['y'] are the transformed x and y values, respectively
+  #use [lwrGroup] and [uprGroup] to access the values from each group separately
+  uprGroup[match(c("Mike Schmidt","Terry Kennedy","Alan Wiggins",
+                   "Terry Puhl", "Jack Clark", "Bob Dernier"),
+                 sp['itemlabel'])] = FALSE
+  fit.upr <- lm(sp['y'][uprGroup] ~ sp['x'][uprGroup])
+  fit.lwr <- lm(sp['y'][lwrGroup] ~ sp['x'][lwrGroup])
+```
+
+
+\noindent $\bf{iii.}$
+
+```{r, eval=FALSE}
+  plot(sp['x'],sp['y'], xlab="Transformed x", ylab="Transformed y")
+  abline(fit.upr)
+  abline(fit.lwr)
+```
+
+\includegraphics{baseball2.pdf}
+
+
+\noindent $\bf{iv.}$ The two lines are almost parallel, so the upper line is approximately an upward shift of the lower line. The slopes are 0.01497674 and 0.01606336 for the upper and lower groups, respectively, off by about $7 \%$
+
+```{r, eval=FALSE, echo=FALSE}
+The upper line's slope is `r fit.upr$coefficients[2]` and the lower line's slope is `r fit.lwr$coefficients[2]`
+```
+
+
+\noindent $\bf{v.}$ For each group (indexed by $j$), 
+\[ y^{-0.4} = \beta_{j,0} + \beta_{j,1} x^{0.4},\] so
+
+\[y = (\beta_{j,0} + \beta_{j,1} x^{2/5})^{-5/2}\]
+
+
+
+
+
+\noindent $\bf{4. a.}$ For $x \leq k$, 
+\[\mu(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3, \]
+so we take 
+\[\mu_1(x) = \alpha_0 + \alpha_1 x + \alpha_2 x^2 + \alpha_3 x^3,\]
+where $\alpha_i = \beta_i$ for $i=0,1,2,3$.
+
+
+
+
+\noindent $\bf{b.}$ For $x < k$, 
+\begin{align*}
+\mu(x) &= \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3 + \beta_4 (x-k)^3 \\
+&= \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3 + \beta_4 (x^3 - 3kx^2 + 3k^2x - k^3) \\
+&= (\beta_0-k^3\beta_4) + (\beta_1 + 3k^2 \beta_4 )x + (\beta_2 -3k\beta_4)x^2 + (\beta_3 -k^3 \beta_4)x^3,
+\end{align*}
+so we take 
+\[\mu_2(x) = \gamma_0 + \gamma_1 x + \gamma_2 x^2 + \gamma_3 x^3,\]
+where $\gamma_0 = \beta_0-k^3\beta_4, \gamma_1 = \beta_1 + 3k^2 \beta_4, \gamma_2 = \beta_2 - 3k\beta_4, \gamma_3 = \beta_3 -k^3 \beta_4$
+
+
+\noindent $\bf{c. i.}$ By construction (i.e. choices for $\alpha_i, \gamma_i, i=1,2,3$ in terms of the $\gamma_i, i=1,2,3,4$), 
+\begin{align*}
+\mu_1(k) &= \beta_0 + \beta_1 k + \beta_2 k^2 + \beta_3 k^3 \\
+&= \beta_0 + \beta_1 k + \beta_2 k^2 + \beta_3 k^3 + 0 \\
+&= \beta_0 + \beta_1 k + \beta_2 k^2 + \beta_3 k^3 + \beta_4 (k-k)^3 \\
+&= \mu_2(k)
+\end{align*}
+
+So the continuity of $\mu$ at $k$ follows by the fact that the left and right limits of $\mu$ at $k$ exist, agree and are equal to $\mu(k)$.
+
+
+\noindent $\bf{ii.}$ 
+\[\mu_1'(x) = \beta_1 + 2 \beta_2 x + 3 \beta_3 x^2,\]
+and
+\[\mu_2'(x) = \beta_1 + 2 \beta_2 x + 3 \beta_3 x^2 + 3 \beta_4 (x-k)^2, \]
+so
+\begin{align*}
+\mu_1'(k) &= \beta_1 + 2 \beta_2 k + 3 \beta_3 k^2 \\
+&= \beta_1 + 2 \beta_2 k + 3 \beta_3 k^2 + 0 \\
+&= \beta_1 + 2 \beta_2 k + 3 \beta_3 k^2 + 3 \beta_4 (k-k)^2 \\
+&= \mu_2'(k)
+\end{align*}
+
+So the continuity of $\mu'$ at $k$ follows by the same reasoning as in i.
+
+
+\noindent $\bf{iii.}$
+\[\mu_1''(x) = 2 \beta_2 + 6 \beta_3 x,\]
+and
+\[\mu_2''(x) = 2 \beta_2 + 6 \beta_3 x + 6 \beta_4 (x-k), \]
+so
+\begin{align*}
+\mu_1''(k) &= 2 \beta_2 + 6 \beta_3 k \\
+&= 2 \beta_2 + 6 \beta_3 k + 0 \\
+&= 2 \beta_2 + 6 \beta_3 k + 6 \beta_4 (k-k) \\
+&= \mu_2''(k)
+\end{align*}
+
+So the continuity of $\mu''$ at $k$ follows by the same reasoning as in i.
+
+
+
+
+
+
+
